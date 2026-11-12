@@ -27,6 +27,13 @@ test('D5 suppression', () => {
   assert.equal(montantCharge(c, '2026-11'), 56000); assert.equal(montantCharge(c, '2026-12'), 0);
   assert.equal(loyer.actifJusqua, undefined);
 });
+test('D28 charge créée ce mois-ci : suppression définitive', () => {
+  const neuve = creerCharge({ nom: 'Doublon', montant: 1000, jour: 5 }, '2026-11');
+  assert.equal(supprimerCharge(neuve, '2026-11'), null);
+});
+test('D28 charge créée un mois précédent : D5 inchangé', () => {
+  assert.equal(supprimerCharge(loyer, '2026-11').actifJusqua, '2026-11');
+});
 test('total démo', () => {
   const ch = [['Transport', 2500, 1], ['Loyer CROUS', 56000, 3], ['Forfait', 1000, 12]].map(([nom, montant, jour]) => creerCharge({ nom, montant, jour }, '2026-10'));
   assert.equal(chargesDuMois(ch, '2026-11'), 59500);

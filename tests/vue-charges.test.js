@@ -25,7 +25,7 @@ test('chargesActives : actives ce mois-ci, triées par jour puis nom', () => {
   const liste = [
     charge('Forfait', 1000, 12), charge('Transport', 2500, 1), charge('Loyer CROUS', 56000, 3),
     charge('Futur', 500, 2, '2026-12'),
-    supprimerCharge(charge('Ancienne', 900, 5), '2026-10'),
+    supprimerCharge(charge('Ancienne', 900, 5, '2026-09'), '2026-10'),
     supprimerCharge(charge('Gym', 2000, 3), '2026-11'),
   ];
   assert.deepEqual(chargesActives(liste, '2026-11').map((c) => c.nom), ['Transport', 'Gym', 'Loyer CROUS', 'Forfait']);

@@ -71,7 +71,9 @@ export function modifierCharge(charge, { nom, montant, jour }, moisCourant) {
   return { ...charge, nom, montant: derniere.montant, jour: derniere.jour, historique };
 }
 
+// D28 : renvoie null (supprimer l'enregistrement) pour une charge créée ce mois-ci, sinon D5 (actifJusqua).
 export function supprimerCharge(charge, moisCourant) {
+  if (charge.actifDepuis === moisCourant) return null;
   return { ...charge, actifJusqua: moisCourant };
 }
 

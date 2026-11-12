@@ -1,4 +1,4 @@
-import { lireTout, lire, ecrire } from '../db.js';
+import { lireTout, lire, ecrire, supprimer } from '../db.js';
 import { creerCharge, modifierCharge, supprimerCharge as marquerSupprimee } from '../domain/charges.js';
 
 export function listerCharges() {
@@ -20,9 +20,13 @@ export async function enregistrerCharge(valeurs, { id, moisCourant }) {
   return charge;
 }
 
-// D5 : l'enregistrement est conservé avec `actifJusqua`, la charge reste déduite ce mois-ci.
+// D28 : une charge créée ce mois-ci est effacée ; D5 sinon : conservée avec `actifJusqua`, déduite ce mois-ci.
 export async function supprimerCharge(id, moisCourant) {
   const charge = marquerSupprimee(await lireExistante(id), moisCourant);
+  if (charge === null) {
+    await supprimer('charges', id);
+    return null;
+  }
   await ecrire('charges', charge);
   return charge;
 }

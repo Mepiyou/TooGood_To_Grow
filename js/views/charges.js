@@ -152,8 +152,11 @@ export async function render(container, params, ctx) {
   boutonSupprimer.addEventListener('click', () => {
     const charge = panneau.courant();
     if (!charge) return;
+    const question = charge.actifDepuis === mois
+      ? `Supprimer la charge « ${charge.nom} » ?`
+      : `Supprimer la charge « ${charge.nom} » ? Elle reste déduite ce mois-ci.`;
     panneau.supprimer(
-      `Supprimer la charge « ${charge.nom} » ? Elle reste déduite ce mois-ci.`,
+      question,
       () => supprimerCharge(charge.id, mois),
       ERREUR_SUPPRESSION,
     );
