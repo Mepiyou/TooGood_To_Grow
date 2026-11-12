@@ -1,0 +1,2 @@
+{ "name": "toogood", "private": true, "type": "module",
+  "scripts": { "test": "node --test tests/", "build": "node tools/build.mjs", "serve": "python3 -m http.server 8081 -d dist" } }
