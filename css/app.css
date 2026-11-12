@@ -128,6 +128,9 @@ a { color: var(--accent); }
 
 .banniere-alerte { background: var(--alerte-fond); color: var(--alerte-texte); }
 
+.bloc-erreur { padding: 16px; border-radius: var(--rayon); }
+.bloc-erreur p { margin: 0 0 12px; }
+
 @media (min-width: 600px) {
   body { border-inline: 1px solid var(--bordure); min-height: 100vh; }
 }
