@@ -8,5 +8,5 @@ export function validerDateDepense(date, aujourdhui, moisDetailSupprime) {
 }
 
 export function trierParDateDesc(depenses) {
-  return [...depenses].sort((a, b) => comparer(b.date, a.date) || (b.creeLe - a.creeLe));
+  return [...depenses].sort((a, b) => comparer(b.date, a.date) || comparer(b.creeLe ?? '', a.creeLe ?? ''));
 }

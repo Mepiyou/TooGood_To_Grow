@@ -13,11 +13,20 @@ test('date de dépense', () => {
 
 test('tri par date décroissante puis création décroissante, sans mutation', () => {
   const l = [
-    { id: 'a', date: '2026-11-01', creeLe: 1 },
-    { id: 'b', date: '2026-11-03', creeLe: 1 },
-    { id: 'c', date: '2026-11-03', creeLe: 2 },
+    { id: 'a', date: '2026-11-01', creeLe: '2026-11-05T09:00:00.000Z' },
+    { id: 'b', date: '2026-11-03', creeLe: '2026-11-03T10:00:00.000Z' },
+    { id: 'c', date: '2026-11-03', creeLe: '2026-11-03T18:30:00.000Z' },
   ];
   const copie = [...l];
   assert.deepEqual(trierParDateDesc(l).map((d) => d.id), ['c', 'b', 'a']);
   assert.deepEqual(l, copie);
+});
+
+test('tri : creeLe absent ne casse pas l\'ordre', () => {
+  const l = [
+    { id: 'a', date: '2026-11-03' },
+    { id: 'b', date: '2026-11-03', creeLe: '2026-11-03T10:00:00.000Z' },
+    { id: 'c', date: '2026-11-04' },
+  ];
+  assert.deepEqual(trierParDateDesc(l).map((d) => d.id), ['c', 'b', 'a']);
 });
