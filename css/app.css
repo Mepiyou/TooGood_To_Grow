@@ -397,3 +397,48 @@ a { color: var(--accent); }
 }
 .bouton-icone:active { background: var(--gris-doux); }
 .bouton-icone[data-action="supprimer"] { color: var(--danger); }
+
+/* Accueil : carte « Tu peux dépenser » puis dernières dépenses */
+.carte-accueil {
+  margin: 16px 0 0;
+  padding: 16px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+}
+.carte-accueil h2 { margin: 0; }
+.carte-titre { font-size: 1rem; font-weight: 600; color: var(--texte-secondaire); }
+.carte-invitation { font-size: 1.125rem; }
+.carte-accueil .bouton { margin-top: 16px; }
+/* Très gros mais contenu à 320 px : la taille suit la largeur, bornée. */
+.solde-quotidien {
+  margin: 4px 0 8px;
+  font-size: clamp(2.25rem, 13vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--accent);
+  overflow-wrap: anywhere;
+}
+.reste-a-vivre { margin: 0; }
+.avertissement-budget {
+  margin: 12px 0 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--alerte-fond);
+  color: var(--alerte-texte);
+}
+.entete-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 24px 0 0;
+}
+.entete-section h2 { margin: 0; }
+.lien-tout-voir {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+  font-weight: 600;
+}
+.dernieres-depenses .ligne-texte { flex: 1; }
