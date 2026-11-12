@@ -122,8 +122,12 @@ export function demarrerRouteur(container, vues, ctx) {
     if (!suivi.estActuel(jeton)) return;
     container.replaceChildren(cible);
     if (!suivi.terminer(jeton)) return;
+    // Une vue de saisie peut désigner son premier champ par [autofocus] ; sinon le focus va au titre.
+    const champ = container.querySelector('[autofocus]');
     const titre = container.querySelector('h1');
-    if (titre) {
+    if (champ) {
+      champ.focus({ preventScroll: true });
+    } else if (titre) {
       titre.setAttribute('tabindex', '-1');
       titre.focus({ preventScroll: true });
     }

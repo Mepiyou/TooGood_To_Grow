@@ -19,6 +19,13 @@ export function joursDansMois(mois) {
   return new Date(Date.UTC(a, m, 0)).getUTCDate();
 }
 
+export function dateValide(date) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date ?? ''));
+  if (!m) return false;
+  const mois = Number(m[2]);
+  return mois >= 1 && mois <= 12 && Number(m[3]) >= 1 && Number(m[3]) <= joursDansMois(`${m[1]}-${m[2]}`);
+}
+
 export function moisDe(date) {
   return date.slice(0, 7);
 }
@@ -76,4 +83,9 @@ export function comparer(a, b) {
 // Seule fonction recevant un objet Date, fourni par l'appelant : date locale.
 export function versISO(d) {
   return composer(d.getFullYear(), d.getMonth() + 1, d.getDate());
+}
+
+// Valeur du champ date quand le jour change : elle suit « aujourd'hui » seulement si l'utilisateur n'y a pas touché.
+export function dateAJour({ valeurChamp, ancienneDate, nouvelleDate }) {
+  return valeurChamp === ancienneDate ? nouvelleDate : valeurChamp;
 }

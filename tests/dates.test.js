@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   joursDansMois, moisDe, jourDe, moisSuivant, moisPrecedent, construireDate,
-  dernierJourDuMois, ajouterJours, ecartJours, moisEntre, comparer, versISO, moisAChange,
+  dernierJourDuMois, ajouterJours, ecartJours, moisEntre, comparer, versISO, moisAChange, dateAJour,
 } from '../js/domain/dates.js';
 
 test('joursDansMois', () => {
@@ -31,4 +31,11 @@ test('moisAChange : vrai quand le mois du jour n’est plus le mois affiché', (
   assert.equal(moisAChange('2026-11', '2026-11-30'), false);
   assert.equal(moisAChange('2026-11', '2026-12-01'), true);
   assert.equal(moisAChange('2026-12', '2027-01-01'), true);
+});
+
+test('dateAJour : suit le jour si le champ n\'a pas été modifié, sinon laisse la saisie', () => {
+  assert.equal(dateAJour({ valeurChamp: '2026-11-12', ancienneDate: '2026-11-12', nouvelleDate: '2026-11-13' }), '2026-11-13');
+  assert.equal(dateAJour({ valeurChamp: '2026-11-10', ancienneDate: '2026-11-12', nouvelleDate: '2026-11-13' }), '2026-11-10');
+  assert.equal(dateAJour({ valeurChamp: '', ancienneDate: '2026-11-12', nouvelleDate: '2026-11-13' }), '');
+  assert.equal(dateAJour({ valeurChamp: '2026-11-12', ancienneDate: '2026-11-12', nouvelleDate: '2026-11-12' }), '2026-11-12');
 });

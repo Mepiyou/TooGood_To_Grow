@@ -1,4 +1,4 @@
-import { moisDe, moisPrecedent, construireDate, joursDansMois } from './dates.js';
+import { moisDe, moisPrecedent, construireDate, dateValide } from './dates.js';
 import { jourEffectif, validerNom, validerJour } from './charges.js';
 import { parseMontant } from './montant.js';
 
@@ -41,13 +41,6 @@ export function revenusDuMois(revenus, mois) {
   const ponctuels = revenus.filter((r) => !r.recurrent && (moisDe(r.date) === mois || datePourMois(r, mois) !== null))
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : parNom(a, b)));
   return [...recurrents, ...ponctuels];
-}
-
-function dateValide(date) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date ?? ''));
-  if (!m) return false;
-  const mois = Number(m[2]);
-  return mois >= 1 && mois <= 12 && Number(m[3]) >= 1 && Number(m[3]) <= joursDansMois(`${m[1]}-${m[2]}`);
 }
 
 export function validerRevenu({ nom, montantTexte, recurrent, jour, date, moisSuivant, mois }) {

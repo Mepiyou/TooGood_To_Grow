@@ -5,6 +5,7 @@
 | 0. Socle | 2026-11-12 | 8 | 29,1 | 10,5 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | `node tools/mesurer.mjs dist` (build v5-b2e1d431) : 0 URL externe, budget respecté |
 | 1. Revenus (US1) | 2026-11-12 | 8 | 50,3 | 16,3 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US1 revenus. `node tools/mesurer.mjs dist` (build v7-065a78a0) : 0 URL externe, budget respecté |
 | 2. Charges fixes (US3) | 2026-11-12 | 8 | 66,8 | 19,9 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US3 charges, panneau de formulaire commun. `node tools/mesurer.mjs dist` (build v11-8f275940) : 0 URL externe, budget respecté |
+| 3. Dépenses (US4) | 2026-11-12 | 8 | 96,9 | 27,2 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US4 saisie, modification, suppression, liste du mois. `node tools/mesurer.mjs dist` (build v15-01312683) : 0 URL externe, budget respecté |
 
 Limite de l'outil : les requêtes d'installation du service worker (précache) ne sont pas comptées en plus du premier chargement.
 
@@ -68,3 +69,20 @@ Base vide au départ (DevTools › Application › Storage › Clear site data),
 8. **320 px** : liste, total, mention et dialog ouvert tiennent sans défilement horizontal ; boutons ≥ 44 px.
 9. **Non-régression Revenus (panneau commun)** : sur #/mois/revenus, refaire les points 1 (ajout « Bourse »), 3 (modification à 460), 6 (erreurs : focus sur le premier champ en erreur) et 7 (Échap rend le focus au déclencheur) de la checklist « Étape 1 » : comportement identique.
 10. **Formulaire d'une charge avec un changement prévu** : il affiche la valeur à venir (580 €) alors que la ligne affiche la valeur du mois (560 €) — comportement voulu.
+
+### Checklist manuelle « Étape 3 »
+
+Base vide au départ (DevTools › Application › Storage › Clear site data), `npm run build && npm run serve`, ouvrir http://localhost:8081.
+
+1. **Gherkin US4 (partie 1)** : depuis l'accueil, « + Ajouter une dépense » → l'écran « Ajouter une dépense » s'ouvre sans barre du bas, curseur dans « Montant » (sur Safari iOS le clavier ne s'ouvre pas tout seul, le focus étant programmatique : toucher le champ montant) ; saisir 12, toucher « Courses » (bouton pressé), « Valider » → retour à l'accueil. DevTools › Application › IndexedDB › `toogood` › `depenses` : un enregistrement `montant: 1200`, `categorieId: "courses"`, `date` = date du jour, `mois` = mois en cours, `creeLe` = `modifieLe`.
+2. **Zéro requête** : DevTools › Réseau ouvert (filtre « Tout »), vider la liste puis refaire le point 1 : aucune requête pendant la saisie et la validation.
+3. **« + Nouvelle »** : sur l'écran d'ajout, saisir un montant puis « + Nouvelle » → dialog « Nouvelle catégorie » ; nom « Café », couleur Framboise → « Créer la catégorie » : le dialog se ferme, « Café » apparaît après « Autre » et avant « + Nouvelle », pressé, avec le focus ; le montant saisi est conservé. Recréer « café » → « Cette catégorie existe déjà. ». Échap ou « Annuler » rend le focus à « + Nouvelle ».
+4. **Erreurs** : « Valider » sans rien saisir → « Saisis un montant. » sous le montant, « Choisis une catégorie. » sous les catégories, focus sur le montant ; avec un montant mais sans catégorie → focus sur le premier bouton de catégorie ; date de demain (saisie au clavier) → « La date ne peut pas être dans le futur. ». Un lecteur d'écran lit le message avec le champ.
+5. **Modification** : copier l'`id` d'une dépense dans IndexedDB, ouvrir `#/ajout/<id>` → « Modifier la dépense », montant (« 12 »), catégorie et date pré-remplis ; passer à 9,50 et « Transport » → « Valider » mène à `#/depenses` ; l'enregistrement garde son `creeLe` et a un nouveau `modifieLe`. `#/ajout/inexistant` → « Cette dépense n'existe plus. » et un lien vers les dépenses.
+6. **Double tap** : saisir une dépense et toucher deux fois très vite « Valider » → une seule dépense dans IndexedDB.
+7. **320 px** (mode responsive) : grille de 3 catégories sans défilement horizontal, noms entiers (« Transport ») ; dialog « Nouvelle catégorie » lisible, 6 pastilles ≥ 44 px ; « ← Retour » ramène à l'écran précédent (ou à l'accueil si l'écran a été ouvert directement).
+8. **iPhone 8 (Safari iOS 16)** : le champ montant ouvre le clavier décimal (virgule disponible) ; le champ date ouvre le sélecteur natif ; après une longue période en arrière-plan, rouvrir l'app et saisir une dépense : elle s'enregistre (reconnexion IndexedDB).
+9. **Liste des dépenses** : `#/depenses` (onglet « Dépenses ») affiche « Dépenses », « Total du mois : … », puis un titre par jour (« mardi 10 novembre ») du plus récent au plus ancien ; chaque ligne montre pastille, catégorie, montant, et les contrôles Modifier (crayon) et Supprimer (corbeille) de 44 px. Sans dépense : « Aucune dépense ce mois-ci. » et le lien « Ajouter une dépense ».
+10. **Modifier depuis la liste** : toucher le crayon d'une ligne → « Modifier la dépense » pré-rempli ; changer le montant et « Valider » → retour à la liste, la ligne et le total sont à jour.
+11. **Supprimer** : la corbeille demande « Supprimer cette dépense de 12 € (Courses) ? » ; « Annuler » ne change rien ; « OK » retire la ligne, le total baisse, le focus passe au lien « Modifier » de la ligne suivante (sinon la précédente, sinon le titre). Un lecteur d'écran annonce « Supprimer : Courses, 12 € ». 320 px : lignes sans défilement horizontal.
+12. **Minuit** : laisser #/ajout ouvert, passer la date système au lendemain (ou attendre minuit), revenir dans l'app : le champ date et sa date max passent à aujourd'hui si on ne les avait pas modifiés.

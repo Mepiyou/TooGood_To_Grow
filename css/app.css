@@ -248,10 +248,152 @@ a { color: var(--accent); }
 
 .actions { display: flex; flex-direction: column; gap: 8px; }
 
+.bouton:disabled { opacity: 0.6; cursor: default; }
+
+/* Écran « Ajouter une dépense » */
+.lien-retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  min-width: 44px;
+  margin: -8px 0 8px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.vue-ajout h1 { margin-bottom: 16px; }
+
+.saisie-montant { position: relative; }
+
+.champ-montant input[type="text"] {
+  min-height: 64px;
+  padding-right: 44px;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.suffixe-euro {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--texte-secondaire);
+  pointer-events: none;
+}
+
+.grille-categories {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.categorie {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 64px;
+  padding: 8px 4px;
+  border: 1px solid var(--texte-secondaire);
+  border-radius: var(--rayon);
+  background: var(--fond);
+  color: var(--texte);
+  font: inherit;
+  font-size: 0.9375rem;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 120ms;
+}
+
+.categorie-nom { overflow-wrap: anywhere; }
+
+/* Sélection signalée par la bordure épaisse, le fond et la graisse, pas seulement par la couleur. */
+.categorie[aria-pressed="true"] {
+  border: 3px solid var(--accent);
+  padding: 6px 2px;
+  background: #E6F1ED;
+  font-weight: 700;
+}
+
+.categorie-nouvelle { border-style: dashed; border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+.pastille {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* Choix de couleur : radios natifs masqués visuellement, pastilles cliquables */
+.grille-couleurs { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.choix-couleur {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+}
+
+.choix-couleur input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.pastille-couleur {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.choix-couleur input:checked + .pastille-couleur { box-shadow: 0 0 0 3px var(--fond), 0 0 0 6px var(--texte); }
+.choix-couleur input:focus-visible + .pastille-couleur { outline: 3px solid var(--accent); outline-offset: 6px; }
+
 @media (min-width: 600px) {
   body { border-inline: 1px solid var(--bordure); min-height: 100vh; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav-lien, .bouton { transition: none; }
+  .nav-lien, .bouton, .categorie { transition: none; }
 }
+
+/* Dépenses du mois : pastille, nom, montant, puis deux contrôles de 44 px */
+.groupe-jour h2 { font-size: 1rem; margin: 16px 0 0; color: var(--texte-secondaire); font-weight: 600; }
+.ligne-depense {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--bordure);
+}
+.ligne-depense .ligne-nom { flex: 1; min-width: 0; }
+.bouton-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--rayon);
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+}
+.bouton-icone:active { background: var(--gris-doux); }
+.bouton-icone[data-action="supprimer"] { color: var(--danger); }
