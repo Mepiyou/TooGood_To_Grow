@@ -5,7 +5,7 @@
 | 0. Socle | 2026-11-12 | 8 | 29,1 | 10,5 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | `node tools/mesurer.mjs dist` (build v5-b2e1d431) : 0 URL externe, budget respecté |
 | 1. Revenus (US1) | 2026-11-12 | 8 | 50,3 | 16,3 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US1 revenus. `node tools/mesurer.mjs dist` (build v7-065a78a0) : 0 URL externe, budget respecté |
 | 2. Charges fixes (US3) | 2026-11-12 | 8 | 66,8 | 19,9 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US3 charges, panneau de formulaire commun. `node tools/mesurer.mjs dist` (build v11-8f275940) : 0 URL externe, budget respecté |
-| 3. Dépenses (US4) | 2026-11-12 | 8 | 96,8 | 27,1 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US4 saisie, modification, suppression, liste du mois. `node tools/mesurer.mjs dist` (build v14-de586aa5) : 0 URL externe, budget respecté |
+| 3. Dépenses (US4) | 2026-11-12 | 8 | 96,9 | 27,2 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US4 saisie, modification, suppression, liste du mois. `node tools/mesurer.mjs dist` (build v15-01312683) : 0 URL externe, budget respecté |
 
 Limite de l'outil : les requêtes d'installation du service worker (précache) ne sont pas comptées en plus du premier chargement.
 
