@@ -5,6 +5,7 @@
 | 0. Socle | 2026-11-12 | 8 | 29,1 | 10,5 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | `node tools/mesurer.mjs dist` (build v5-b2e1d431) : 0 URL externe, budget respecté |
 | 1. Revenus (US1) | 2026-11-12 | 8 | 50,3 | 16,3 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US1 revenus. `node tools/mesurer.mjs dist` (build v7-065a78a0) : 0 URL externe, budget respecté |
 | 2. Charges fixes (US3) | 2026-11-12 | 8 | 66,8 | 19,9 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US3 charges, panneau de formulaire commun. `node tools/mesurer.mjs dist` (build v11-8f275940) : 0 URL externe, budget respecté |
+| 3. Dépenses (US4) | 2026-11-12 | 8 | 95,8 | 26,8 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US4 saisie, modification, suppression, liste du mois. `node tools/mesurer.mjs dist` (build v13-0e5e5a25) : 0 URL externe, budget respecté |
 
 Limite de l'outil : les requêtes d'installation du service worker (précache) ne sont pas comptées en plus du premier chargement.
 
@@ -81,3 +82,6 @@ Base vide au départ (DevTools › Application › Storage › Clear site data),
 6. **Double tap** : saisir une dépense et toucher deux fois très vite « Valider » → une seule dépense dans IndexedDB.
 7. **320 px** (mode responsive) : grille de 3 catégories sans défilement horizontal, noms entiers (« Transport ») ; dialog « Nouvelle catégorie » lisible, 6 pastilles ≥ 44 px ; « ← Retour » ramène à l'écran précédent (ou à l'accueil si l'écran a été ouvert directement).
 8. **iPhone 8 (Safari iOS 16)** : le champ montant ouvre le clavier décimal (virgule disponible) ; le champ date ouvre le sélecteur natif ; après une longue période en arrière-plan, rouvrir l'app et saisir une dépense : elle s'enregistre (reconnexion IndexedDB).
+9. **Liste des dépenses** : `#/depenses` (onglet « Dépenses ») affiche « Dépenses », « Total du mois : … », puis un titre par jour (« mardi 10 novembre ») du plus récent au plus ancien ; chaque ligne montre pastille, catégorie, montant, et les contrôles Modifier (crayon) et Supprimer (corbeille) de 44 px. Sans dépense : « Aucune dépense ce mois-ci. » et le lien « Ajouter une dépense ».
+10. **Modifier depuis la liste** : toucher le crayon d'une ligne → « Modifier la dépense » pré-rempli ; changer le montant et « Valider » → retour à la liste, la ligne et le total sont à jour.
+11. **Supprimer** : la corbeille demande « Supprimer cette dépense de 12 € (Courses) ? » ; « Annuler » ne change rien ; « OK » retire la ligne, le total baisse, le focus passe à la ligne suivante (sinon la précédente, sinon le titre). Un lecteur d'écran annonce « Supprimer : Courses, 12 € ». 320 px : lignes sans défilement horizontal.
