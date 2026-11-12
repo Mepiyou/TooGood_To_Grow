@@ -65,7 +65,7 @@ function erreurChamp(champ) {
 const DIALOG = `<dialog class="panneau" aria-labelledby="charge-titre">
   <form class="formulaire" novalidate>
     <h2 id="charge-titre">Ajouter une charge</h2>
-    <p class="secondaire aide-formulaire" id="charge-aide" hidden>La modification s'appliquera à partir du mois prochain.</p>
+    <p class="secondaire aide-formulaire" id="charge-aide" hidden>Le nouveau montant et le nouveau jour s'appliqueront à partir du mois prochain.</p>
     <div class="champ">
       <label for="charge-nom">Nom</label>
       <input id="charge-nom" name="nom" type="text" maxlength="40" autocomplete="off">
