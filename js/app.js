@@ -2,7 +2,7 @@ import { ouvrirDB } from './db.js';
 import { initialiserCategories } from './store/categories.js';
 import { versISO } from './domain/dates.js';
 import { demarrerRouteur } from './router.js';
-import { initBanniereHorsLigne } from './ui/banniere.js';
+import { initBanniereHorsLigne, afficherBanniereMaj } from './ui/banniere.js';
 import { render as renderAccueil } from './views/accueil.js';
 
 // Vues des étapes suivantes : le routeur affiche l'accueil tant qu'elles n'existent pas.
@@ -37,5 +37,33 @@ function lancer() {
   demarrer().catch(afficherErreurDemarrage);
 }
 
+// Remplacé par le build ; tel quel (sources), aucun service worker n'est enregistré.
+const VERSION = '__VERSION__';
+
+function enregistrerServiceWorker() {
+  if (!/^v\d+$/.test(VERSION) || !('serviceWorker' in navigator)) return;
+  let rechargement = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (rechargement) return;
+    rechargement = true;
+    window.location.reload();
+  });
+  navigator.serviceWorker.register('sw.js').then((inscription) => {
+    const signaler = (worker) => {
+      if (!navigator.serviceWorker.controller) return;
+      afficherBanniereMaj(() => worker.postMessage('SKIP_WAITING'));
+    };
+    if (inscription.waiting) signaler(inscription.waiting);
+    inscription.addEventListener('updatefound', () => {
+      const worker = inscription.installing;
+      if (!worker) return;
+      worker.addEventListener('statechange', () => {
+        if (worker.state === 'installed') signaler(worker);
+      });
+    });
+  }).catch((erreur) => console.error(erreur));
+}
+
 initBanniereHorsLigne();
+enregistrerServiceWorker();
 lancer();

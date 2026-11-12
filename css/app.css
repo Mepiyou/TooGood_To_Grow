@@ -126,6 +126,9 @@ a { color: var(--accent); }
 
 .banniere[hidden] { display: none; }
 
+.banniere-maj { background: var(--alerte-fond); color: var(--alerte-texte); }
+.banniere-bouton { margin-inline-start: 8px; }
+
 .banniere-alerte { background: var(--alerte-fond); color: var(--alerte-texte); }
 
 .bloc-erreur { padding: 16px; border-radius: var(--rayon); }

@@ -1,5 +1,24 @@
 const TEXTE_HORS_LIGNE = 'Hors ligne · tes saisies sont enregistrées sur ce téléphone.';
 
+export function afficherBanniereMaj(surRecharger) {
+  const banniere = document.createElement('div');
+  banniere.className = 'banniere banniere-maj';
+  banniere.setAttribute('role', 'status');
+  const texte = document.createElement('span');
+  texte.textContent = 'Nouvelle version disponible — ';
+  const bouton = document.createElement('button');
+  bouton.type = 'button';
+  bouton.className = 'bouton banniere-bouton';
+  bouton.textContent = 'Recharger';
+  bouton.addEventListener('click', () => {
+    bouton.disabled = true;
+    surRecharger();
+  });
+  banniere.append(texte, bouton);
+  document.body.prepend(banniere);
+  return banniere;
+}
+
 export function initBanniereHorsLigne() {
   const banniere = document.createElement('div');
   banniere.className = 'banniere banniere-hors-ligne';

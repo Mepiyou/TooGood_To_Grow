@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Capture d'écran de l'app servie (port 8080 par défaut), via Chrome Windows en headless (WSL).
+# Capture d'écran de l'app servie (port 8081 par défaut), via Chrome Windows en headless (WSL).
 # Usage : tools/capture.sh '#/' 375   (HOTE=<ip>, PORT=<n> pour une autre adresse ou un autre port)
 set -euo pipefail
 
 hash="${1:-#/}"
 largeur="${2:-375}"
 hote="${HOTE:-localhost}"
-port="${PORT:-8080}"
+port="${PORT:-8081}"
 chrome="/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
 
 racine="$(cd "$(dirname "$0")/.." && pwd)"
