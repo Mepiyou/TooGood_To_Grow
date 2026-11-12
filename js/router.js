@@ -3,17 +3,17 @@ import { rendreNav } from './ui/nav.js';
 // Table des routes (spec § 5). `motif` : segments séparés par « / », « :x » = paramètre.
 // Les routes V2 sont présentes mais désactivées en V1 (D14) : elles retombent sur l'accueil.
 export const ROUTES = [
-  { motif: '/', nom: 'accueil', onglet: 'accueil', bouton: true },
-  { motif: '/ajout', nom: 'ajout', onglet: null, bouton: false },
-  { motif: '/ajout/:id', nom: 'ajout', onglet: null, bouton: false },
-  { motif: '/depenses', nom: 'depenses', onglet: 'depenses', bouton: true },
-  { motif: '/historique', nom: 'historique', onglet: 'depenses', bouton: true },
-  { motif: '/historique/supprimer/:mois', nom: 'supprimer-mois', onglet: null, bouton: false },
-  { motif: '/categories', nom: 'categories', onglet: null, bouton: false },
-  { motif: '/mois/revenus', nom: 'revenus', onglet: 'mois', bouton: true },
-  { motif: '/mois/charges', nom: 'charges', onglet: 'mois', bouton: true },
-  { motif: '/mois/provisions', nom: 'provisions', onglet: 'mois', bouton: true, v2: true },
-  { motif: '/enveloppes', nom: 'enveloppes', onglet: 'enveloppes', bouton: true, v2: true },
+  { motif: '/', nom: 'accueil', onglet: 'accueil', bouton: true, titre: 'Accueil' },
+  { motif: '/ajout', nom: 'ajout', onglet: null, bouton: false, titre: 'Ajouter une dépense' },
+  { motif: '/ajout/:id', nom: 'ajout', onglet: null, bouton: false, titre: 'Modifier la dépense' },
+  { motif: '/depenses', nom: 'depenses', onglet: 'depenses', bouton: true, titre: 'Dépenses' },
+  { motif: '/historique', nom: 'historique', onglet: 'depenses', bouton: true, titre: 'Historique' },
+  { motif: '/historique/supprimer/:mois', nom: 'supprimer-mois', onglet: null, bouton: false, titre: 'Supprimer un mois' },
+  { motif: '/categories', nom: 'categories', onglet: null, bouton: false, titre: 'Catégories' },
+  { motif: '/mois/revenus', nom: 'revenus', onglet: 'mois', bouton: true, titre: 'Mon mois – Revenus' },
+  { motif: '/mois/charges', nom: 'charges', onglet: 'mois', bouton: true, titre: 'Mon mois – Charges fixes' },
+  { motif: '/mois/provisions', nom: 'provisions', onglet: 'mois', bouton: true, v2: true, titre: 'Mon mois – Provisions' },
+  { motif: '/enveloppes', nom: 'enveloppes', onglet: 'enveloppes', bouton: true, v2: true, titre: 'Enveloppes' },
 ];
 
 const V2_ACTIVE = false;
@@ -33,18 +33,31 @@ function resultat(route, params) {
   return { nom: route.nom, params, onglet: route.onglet, bouton: route.bouton };
 }
 
-export function resoudreRoute(hash) {
+function trouverRoute(hash) {
   const chemin = (hash || '').replace(/^#/, '').split('?')[0];
   const segments = chemin.split('/').filter(Boolean);
   try {
     for (const route of ROUTES) {
       const params = correspond(route.motif, segments);
-      if (params && (!route.v2 || V2_ACTIVE)) return resultat(route, params);
+      if (params && (!route.v2 || V2_ACTIVE)) return { route, params };
     }
   } catch {
     // encodage invalide dans l'URL : on retombe sur l'accueil
   }
-  return resultat(ROUTES[0], {});
+  return { route: ROUTES[0], params: {} };
+}
+
+export function resoudreRoute(hash) {
+  const { route, params } = trouverRoute(hash);
+  return resultat(route, params);
+}
+
+const NOM_APP = 'TooGood To Grow';
+
+// Titre de l'onglet du navigateur, lu aussi par les lecteurs d'écran au changement de page.
+export function titreDocument(hash) {
+  const { route } = trouverRoute(hash);
+  return route === ROUTES[0] ? NOM_APP : `${route.titre} · ${NOM_APP}`;
 }
 
 const MESSAGE_ERREUR_VUE = "Impossible d'afficher cet écran. Réessaie dans un instant.";
@@ -96,6 +109,7 @@ export function demarrerRouteur(container, vues, ctx) {
     const existe = Boolean(vues[route.nom]);
     const vue = existe ? vues[route.nom] : vues.accueil;
     rendreNav(route.onglet, route.bouton);
+    document.title = titreDocument(existe ? window.location.hash : '#/');
     const cible = document.createElement('div');
     const ctxVue = { ...ctx, estActuel: () => suivi.estActuel(jeton) };
     try {

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { resoudreRoute, ROUTES, creerSuiviRendus } from '../js/router.js';
+import { resoudreRoute, ROUTES, creerSuiviRendus, titreDocument } from '../js/router.js';
 
 test('routes', () => {
   assert.equal(resoudreRoute('').nom, 'accueil'); assert.equal(resoudreRoute('#/').nom, 'accueil');
@@ -18,6 +18,17 @@ test('forme exacte et V2', () => {
   assert.deepEqual(resoudreRoute('#/mois/provisions'), resoudreRoute('#/'));
   assert.equal(ROUTES.filter((r) => r.v2).length, 2);
   assert.equal(resoudreRoute('#/categories').onglet, null);
+});
+
+test('titre du document par route', () => {
+  assert.equal(titreDocument('#/'), 'TooGood To Grow');
+  assert.equal(titreDocument('#/inconnue'), 'TooGood To Grow');
+  assert.equal(titreDocument('#/mois/revenus'), 'Mon mois – Revenus · TooGood To Grow');
+  assert.equal(titreDocument('#/ajout'), 'Ajouter une dépense · TooGood To Grow');
+  assert.equal(titreDocument('#/ajout/abc'), 'Modifier la dépense · TooGood To Grow');
+  assert.equal(titreDocument('#/historique/supprimer/2026-10'), 'Supprimer un mois · TooGood To Grow');
+  assert.equal(titreDocument('#/enveloppes'), 'TooGood To Grow'); // V2 masquée : titre de l'accueil
+  assert.ok(ROUTES.every((r) => typeof r.titre === 'string' && r.titre !== ''));
 });
 
 test('cas limites du hash', () => {
