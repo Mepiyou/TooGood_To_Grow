@@ -369,3 +369,31 @@ a { color: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
   .nav-lien, .bouton, .categorie { transition: none; }
 }
+
+/* Dépenses du mois : pastille, nom, montant, puis deux contrôles de 44 px */
+.groupe-jour h2 { font-size: 1rem; margin: 16px 0 0; color: var(--texte-secondaire); font-weight: 600; }
+.ligne-depense {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--bordure);
+}
+.ligne-depense .ligne-nom { flex: 1; min-width: 0; }
+.bouton-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--rayon);
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+}
+.bouton-icone:active { background: var(--gris-doux); }
+.bouton-icone[data-action="supprimer"] { color: var(--danger); }

@@ -61,3 +61,10 @@ export function formatNomMois(mois) {
 export function majuscule(texte) {
   return texte.charAt(0).toUpperCase() + texte.slice(1);
 }
+
+const fmtJourSemaine = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+
+// « mardi 10 novembre » : titre de groupe, sans l'année.
+export function formatJourSemaine(date) {
+  return fmtJourSemaine.format(dateUTC(date));
+}

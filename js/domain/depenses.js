@@ -41,3 +41,18 @@ export function construireDepense({ id, montant, categorieId, date }, existant, 
     modifieLe: maintenant,
   };
 }
+
+export function totalDepenses(depenses) {
+  return depenses.reduce((somme, d) => somme + d.montant, 0);
+}
+
+// Un groupe par jour, du plus récent au plus ancien ; les lignes du jour suivent l'ordre de trierParDateDesc.
+export function groupesParJour(depenses) {
+  const groupes = [];
+  for (const depense of trierParDateDesc(depenses)) {
+    const dernier = groupes[groupes.length - 1];
+    if (dernier && dernier.date === depense.date) dernier.depenses.push(depense);
+    else groupes.push({ date: depense.date, depenses: [depense] });
+  }
+  return groupes;
+}

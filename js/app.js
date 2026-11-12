@@ -7,6 +7,7 @@ import { render as renderAccueil } from './views/accueil.js';
 import { render as renderRevenus } from './views/revenus.js';
 import { render as renderCharges } from './views/charges.js';
 import { render as renderAjout } from './views/ajout.js';
+import { render as renderDepenses } from './views/depenses.js';
 
 // Vues des étapes suivantes : le routeur affiche l'accueil tant qu'elles n'existent pas.
 const vues = {
@@ -14,6 +15,7 @@ const vues = {
   revenus: { render: renderRevenus },
   charges: { render: renderCharges },
   ajout: { render: renderAjout },
+  depenses: { render: renderDepenses },
 };
 
 const MESSAGE_ERREUR = "Impossible d'ouvrir les données de l'application sur ce téléphone. Si tu es en navigation privée, ouvre l'app dans un onglet normal.";
