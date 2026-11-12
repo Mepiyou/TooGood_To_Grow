@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { resoudreRoute, ROUTES, creerSuiviRendus, titreDocument } from '../js/router.js';
+import { resoudreRoute, ROUTES, creerSuiviRendus, titreDocument, doitRafraichir } from '../js/router.js';
 
 test('routes', () => {
   assert.equal(resoudreRoute('').nom, 'accueil'); assert.equal(resoudreRoute('#/').nom, 'accueil');
@@ -61,4 +61,12 @@ test('suivi des rendus : le focus dû survit à un rafraîchissement', () => {
 test('suivi des rendus : un rafraîchissement seul ne déplace pas le focus', () => {
   const suivi = creerSuiviRendus();
   assert.equal(suivi.terminer(suivi.demarrer(false)), false);
+});
+
+test('doitRafraichir : seulement si la date a changé, jamais sur l\'écran d\'ajout', () => {
+  assert.equal(doitRafraichir({ dateRendu: '2026-11-10', aujourdhui: '2026-11-10', route: 'accueil' }), false);
+  assert.equal(doitRafraichir({ dateRendu: '2026-11-10', aujourdhui: '2026-11-11', route: 'accueil' }), true);
+  assert.equal(doitRafraichir({ dateRendu: '2026-11-30', aujourdhui: '2026-12-01', route: 'depenses' }), true);
+  assert.equal(doitRafraichir({ dateRendu: '2026-11-10', aujourdhui: '2026-11-11', route: 'ajout' }), false);
+  assert.equal(doitRafraichir({ dateRendu: null, aujourdhui: '2026-11-11', route: 'accueil' }), false);
 });
