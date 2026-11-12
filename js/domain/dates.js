@@ -84,3 +84,8 @@ export function comparer(a, b) {
 export function versISO(d) {
   return composer(d.getFullYear(), d.getMonth() + 1, d.getDate());
 }
+
+// Valeur du champ date quand le jour change : elle suit « aujourd'hui » seulement si l'utilisateur n'y a pas touché.
+export function dateAJour({ valeurChamp, ancienneDate, nouvelleDate }) {
+  return valeurChamp === ancienneDate ? nouvelleDate : valeurChamp;
+}

@@ -2,6 +2,7 @@ import { lireTout } from '../db.js';
 import { echapper } from '../ui/dom.js';
 import { ouvrirFormCategorie } from '../ui/form-categorie.js';
 import { categorieDeRepli } from '../domain/categories.js';
+import { dateAJour } from '../domain/dates.js';
 import { validerDepense, moisDetailSupprime } from '../domain/depenses.js';
 import { centimesVersSaisie } from '../domain/montant.js';
 import { listerCategories } from '../store/categories.js';
@@ -47,7 +48,7 @@ export async function render(container, params, ctx) {
 
   const categories = [...categoriesLues];
   let choisie = depense ? categorieDeRepli(depense.categorieId, categories) : null;
-  const aujourdhui = ctx.aujourdhui();
+  let aujourdhui = ctx.aujourdhui();
 
   container.innerHTML = `<div class="vue-ajout">
     <a class="lien-retour" href="#/"><span aria-hidden="true">←</span> Retour</a>
@@ -164,6 +165,26 @@ export async function render(container, params, ctx) {
       },
     });
   });
+
+  // Appli restée ouverte après minuit : au retour, le jour de référence et la date par défaut suivent.
+  function synchroniserDate() {
+    if (!form.isConnected) {
+      document.removeEventListener('visibilitychange', auRetour);
+      window.removeEventListener('focus', auRetour);
+      return;
+    }
+    const nouvelle = ctx.aujourdhui();
+    if (nouvelle === aujourdhui) return;
+    date.value = dateAJour({ valeurChamp: date.value, ancienneDate: aujourdhui, nouvelleDate: nouvelle });
+    date.max = nouvelle;
+    aujourdhui = nouvelle;
+  }
+  function auRetour() {
+    if (document.visibilityState === 'hidden') return;
+    synchroniserDate();
+  }
+  document.addEventListener('visibilitychange', auRetour);
+  window.addEventListener('focus', auRetour);
 
   // Le bouton est désactivé dès le premier tap : un double tap n'enregistre qu'une dépense.
   // La date du jour est relue à la validation (appli restée ouverte après minuit).
