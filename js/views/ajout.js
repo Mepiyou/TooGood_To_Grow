@@ -169,7 +169,8 @@ export async function render(container, params, ctx) {
     }
     const nouvelle = ctx.aujourdhui();
     if (nouvelle === aujourdhui) return;
-    date.value = dateAJour({ valeurChamp: date.value, ancienneDate: aujourdhui, nouvelleDate: nouvelle });
+    // En modification, la date d'une dépense existante ne change jamais toute seule.
+    if (!depense) date.value = dateAJour({ valeurChamp: date.value, ancienneDate: aujourdhui, nouvelleDate: nouvelle });
     date.max = nouvelle;
     aujourdhui = nouvelle;
   }
