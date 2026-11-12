@@ -2,15 +2,19 @@
 // Aucune dépendance : le graphe des imports est lu par expressions régulières,
 // ce qui impose les seules formes de modules autorisées par les règles du projet.
 import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync, readdirSync, statSync } from 'node:fs';
-import { dirname, resolve, relative, join, sep } from 'node:path';
+import { dirname, resolve, relative, join, sep, basename } from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+const RACINE_PROJET = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
 const RE_IMPORT = /^import\s*\{([^}]*)\}\s*from\s*'(\.{1,2}\/[^']+\.js)'\s*;?[ \t]*$/gm;
-const RE_EXPORT = /^export\s+(?:async\s+function\s*\*?|function\s*\*?|const|let|class)\s+([A-Za-z_$][\w$]*)/gm;
+const RE_EXPORT = /^export\s+(?:async\s+function\s*\*?|function\s*\*?|const|class)\s+([A-Za-z_$][\w$]*)/gm;
 
 const FORMES_INTERDITES = [
   [/^\s*export\s+default\b/m, 'export default'],
+  // Une fois regroupé, l'importeur recevrait une copie figée au lieu de la liaison vivante.
+  [/^\s*export\s+let\b/m, 'export let (utiliser export const et une fonction pour modifier la valeur)'],
   [/^\s*export\s*\{/m, 'export { … }'],
   [/^\s*export\s*\*/m, 'export * from'],
   [/^\s*import\s*\*/m, 'import * as'],
@@ -20,7 +24,7 @@ const FORMES_INTERDITES = [
 ];
 
 function nommer(fichier) {
-  const rel = relative(process.cwd(), fichier).split(sep).join('/');
+  const rel = relative(RACINE_PROJET, fichier).split(sep).join('/');
   return rel && !rel.startsWith('..') ? rel : fichier;
 }
 
@@ -97,6 +101,15 @@ export function regrouper(entree) {
   return blocs.join('\n');
 }
 
+// Fichiers ajoutés par l'OS ou les outils (OneDrive, Windows, macOS) : jamais publiés.
+const PARASITES = new Set(['desktop.ini', 'thumbs.db', '.ds_store']);
+
+export function estParasite(nom) {
+  return nom.startsWith('.') || PARASITES.has(nom.toLowerCase());
+}
+
+const sansParasites = (source) => !estParasite(basename(source));
+
 function listerFichiers(dossier, base = dossier) {
   const fichiers = [];
   for (const nom of readdirSync(dossier).sort()) {
@@ -120,20 +133,23 @@ export function construire(racine = process.cwd()) {
 
   writeFileSync(join(dist, 'js', 'app.js'), regrouper(join(racine, 'js', 'app.js')));
   cpSync(join(racine, 'index.html'), join(dist, 'index.html'));
-  cpSync(join(racine, 'css'), join(dist, 'css'), { recursive: true });
+  cpSync(join(racine, 'css'), join(dist, 'css'), { recursive: true, filter: sansParasites });
   // Créés à la tâche 0.5 : copiés seulement s'ils existent.
   for (const nom of ['manifest.webmanifest', 'icons', 'sw.js']) {
-    if (existsSync(join(racine, nom))) cpSync(join(racine, nom), join(dist, nom), { recursive: true });
+    if (existsSync(join(racine, nom))) cpSync(join(racine, nom), join(dist, nom), { recursive: true, filter: sansParasites });
   }
 
   // Empreinte calculée avant le remplacement de la version, sinon elle changerait à chaque build.
+  // Le gabarit sw.js y entre tel quel : modifier le service worker change aussi le nom du cache.
   const fichiers = listerFichiers(dist).filter((f) => f !== 'sw.js');
   const hash = createHash('sha256');
-  for (const f of fichiers) {
-    hash.update(f + '\u0000');
-    hash.update(readFileSync(join(dist, f)));
+  const empreindre = (nom, contenu) => {
+    hash.update(nom + '\u0000');
+    hash.update(contenu);
     hash.update('\u0000');
-  }
+  };
+  for (const f of fichiers) empreindre(f, readFileSync(join(dist, f)));
+  if (existsSync(join(racine, 'sw.js'))) empreindre('sw.js', readFileSync(join(racine, 'sw.js')));
   const empreinte = hash.digest('hex');
 
   const cheminVersion = join(racine, 'tools', 'version.json');
@@ -143,7 +159,9 @@ export function construire(racine = process.cwd()) {
     etat.empreinte = empreinte;
     writeFileSync(cheminVersion, JSON.stringify(etat, null, 2) + '\n');
   }
-  const version = `v${etat.version}`;
+  // Le suffixe d'empreinte garantit un nom de cache différent pour tout contenu différent,
+  // même si tools/version.json n'a pas été commité.
+  const version = `v${etat.version}-${empreinte.slice(0, 8)}`;
 
   const motifVersion = /(['"])__VERSION__\1/g;
   remplacer(join(dist, 'js', 'app.js'), motifVersion, `'${version}'`);
@@ -155,8 +173,7 @@ export function construire(racine = process.cwd()) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
-    const racine = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-    const { version, fichiers } = construire(racine);
+    const { version, fichiers } = construire(RACINE_PROJET);
     console.log(`dist/ construit (${version}) : ${fichiers.length} fichiers hors sw.js`);
   } catch (erreur) {
     console.error(`Échec du build : ${erreur.message}`);

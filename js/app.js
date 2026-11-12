@@ -41,7 +41,7 @@ function lancer() {
 const VERSION = '__VERSION__';
 
 function enregistrerServiceWorker() {
-  if (!/^v\d+$/.test(VERSION) || !('serviceWorker' in navigator)) return;
+  if (!/^v\d+-[0-9a-f]{8}$/.test(VERSION) || !('serviceWorker' in navigator)) return;
   // controllerchange survient aussi à la première installation (clients.claim()) :
   // on ne recharge que si l'utilisateur a demandé la mise à jour, et une seule fois.
   let rechargementDemande = false;
