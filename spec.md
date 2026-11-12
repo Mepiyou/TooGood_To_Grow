@@ -369,7 +369,7 @@ Ces décisions complètent ou précisent les sections ci-dessus. En cas de contr
 | # | Sujet | Décision |
 |---|---|---|
 | D1 | Période budgétaire | Mois calendaire. Chaque revenu a une option **« Compte pour le mois suivant »** (champ `moisSuivant`, booléen, `false` par défaut, store `revenus`). Si elle est cochée, un revenu reçu le jour J du mois M compte dans les revenus reçus de M+1, **dès le 1er du mois**, et pas dans ceux de M. Dans le formulaire de revenu : case à cocher sous la date. Les tests T1 à T15 passent les montants reçus directement. |
-| D1b | Prochaine rentrée et `moisSuivant` | Un revenu `moisSuivant` n'alimente pas le mois en cours : il est **ignoré** dans le calcul de la prochaine rentrée (§4.5). *(Conséquence de D1, à confirmer.)* |
+| D1b | Prochaine rentrée et `moisSuivant` | Un revenu `moisSuivant` n'alimente pas le mois en cours : il est **ignoré** dans le calcul de la prochaine rentrée (§4.5). (confirmé) |
 | D2 | Report de solde | Aucun report d'un mois sur l'autre en V1 (ni excédent ni déficit). |
 | D3 | Prochaine rentrée | Recherche **uniquement dans le mois en cours** (strictement après `aujourdhui`) ; sinon dernier jour du mois. On ne regarde pas le mois suivant (remplace §4.5, 1er point). |
 | D4 | Modification / suppression d'un revenu | Effet immédiat, y compris sur le mois en cours. Pas d'historique. |
@@ -385,7 +385,7 @@ Ces décisions complètent ou précisent les sections ci-dessus. En cas de contr
 | D8 | Tests touchant IndexedDB / import (T9, T10, T11, T13) | Écrits comme **fonctions pures** dans `domain/` (plan de suppression d'un mois, réaffectation de catégorie, `validerImport`). La transaction IndexedDB est vérifiée manuellement. |
 | D9 | Fichiers supplémentaires | `js/domain/montant.js` + `tests/montant.test.js` (T12), `js/domain/import.js` + `tests/import.test.js` (T13), `tests/alertes.test.js` (T15). |
 | D10 | TDD | Pour chaque étape : écrire ses tests, constater l'échec, implémenter. |
-| D11 | Branches | Un seul worktree, une branche `feat/v1`, un commit par tâche, un tag par étape (`etape-0` … `etape-7`). Remplace « une story = une branche » (§13). |
+| D11 | Branches et Git | Une branche par étape, créée depuis `master` à jour : `etape-0-socle`, `etape-1-revenus`, `etape-2-charges`, `etape-3-depenses`, `etape-4-accueil`, `etape-5-hors-ligne`, `etape-6-graphiques-stockage`, `etape-7-v2`. Un commit par tâche (français, `type(portée): description`), poussé aussitôt. En fin d'étape, après validation : PR vers `master` (titre « Étape N – … »), merge, tag `etape-N` poussé. Jamais de `--force`, jamais de réécriture d'historique poussé. Aucune mention d'attribution à Claude dans les commits et PR. |
 | T16 | Nouveau test | Job 400 €, reçu le 30 octobre 2026, `moisSuivant = true`, `aujourdhui = 2026-11-01` → compté dans les revenus reçus de novembre (et pas dans ceux d'octobre). Fichier `tests/budget.test.js`, étape 1. |
 
 ### Découpage des étapes
@@ -416,3 +416,15 @@ Ces décisions complètent ou précisent les sections ci-dessus. En cas de contr
 | D24 | Icônes PWA | PNG générés par un script Node (zlib, sans dépendance) : carré `#0B6E4F`, « TG » en blanc. |
 | D25 | Mesures non automatisables | Test sur iPhone 8 réel (mode avion) et EcoIndex : notés « à faire par l'équipe » dans `MESURES.md`. |
 | D26 | Maquette | Le lien Claude Design n'est pas consulté : la section `<maquette>` de `Brief.md` fait foi. |
+
+### Décisions du plan (validées le 2026-11-12)
+
+| # | Sujet | Décision |
+|---|---|---|
+| B1 | Requêtes vs modules ES | Sources en modules ES natifs (utilisables sans build pour développer et tester). `node tools/build.mjs` produit `dist/` avec **un seul** `js/app.js` et **un seul** `css/app.css`, génère la liste de précache du service worker et **incrémente la version du cache** (`toogood-vN`) quand le contenu change. Seul `dist/` est déployé. |
+| B2 | Total du mois et `moisSuivant` | Le total des revenus attendus du mois M compte les revenus qui financent M (un revenu `moisSuivant` du 30 octobre compte dans le total de novembre). |
+| B3 | Reste à vivre à 0 € | « 0 €/jour » sans message ; l'avertissement n'apparaît que si le reste à vivre est négatif. |
+| B4 | Accueil sans rentrée prévue | « Reste à vivre : 285 € · fin du mois dans 20 jours » ; sinon « … · prochaine rentrée dans 15 jours (APL, le 25) » ; singulier « dans 1 jour ». |
+| B5 | Après « Valider » | Ajout → `#/` ; modification → `#/depenses`. |
+| B6 | Bouton rouge | `--danger: #B3261E`. |
+| B7 | Suppressions | `confirm()` natif pour revenus, charges et dépenses. La suppression d'un mois garde son écran de confirmation dédié (§ 8.2). |
