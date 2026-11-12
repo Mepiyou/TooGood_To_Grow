@@ -22,7 +22,14 @@ export function ouvrirDB() {
     promesseDB = new Promise((resolve, reject) => {
       const demande = indexedDB.open(NOM_BASE, VERSION);
       demande.onupgradeneeded = (e) => migrer(demande.result, demande.transaction, e.oldVersion);
-      demande.onsuccess = () => resolve(demande.result);
+      demande.onsuccess = () => {
+        const db = demande.result;
+        // Safari iOS ferme la connexion d'une PWA restée en arrière-plan : la promesse en cache
+        // serait morte, on la libère pour rouvrir la base au prochain appel.
+        db.onclose = () => { promesseDB = null; };
+        db.onversionchange = () => { db.close(); promesseDB = null; };
+        resolve(db);
+      };
       demande.onerror = () => reject(demande.error);
       demande.onblocked = () => reject(new Error('Ouverture de la base bloquée'));
     }).catch((erreur) => {
