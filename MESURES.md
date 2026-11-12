@@ -2,7 +2,9 @@
 
 | Étape | Date | Requêtes | Poids brut (Ko) | Poids gzip (Ko) | LCP 4G/3G | Lighthouse a11y | 320 px | Remarques |
 |-------|------|----------|-----------------|-----------------|-----------|-----------------|--------|-----------|
-| 0. Socle | 2026-11-12 | 8 | 26,5 | 9,6 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | `node tools/mesurer.mjs dist` : 0 URL externe, budget respecté |
+| 0. Socle | 2026-11-12 | 8 | 29,1 | 10,5 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | `node tools/mesurer.mjs dist` (build v5-b2e1d431) : 0 URL externe, budget respecté |
+
+Limite de l'outil : les requêtes d'installation du service worker (précache) ne sont pas comptées en plus du premier chargement.
 
 ## À faire par l'équipe
 
