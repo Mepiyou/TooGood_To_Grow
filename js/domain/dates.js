@@ -19,6 +19,13 @@ export function joursDansMois(mois) {
   return new Date(Date.UTC(a, m, 0)).getUTCDate();
 }
 
+export function dateValide(date) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date ?? ''));
+  if (!m) return false;
+  const mois = Number(m[2]);
+  return mois >= 1 && mois <= 12 && Number(m[3]) >= 1 && Number(m[3]) <= joursDansMois(`${m[1]}-${m[2]}`);
+}
+
 export function moisDe(date) {
   return date.slice(0, 7);
 }
