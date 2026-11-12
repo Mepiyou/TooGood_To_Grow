@@ -51,6 +51,13 @@ export function formatMois(mois) {
   return fmtMois.format(dateUTC(`${mois}-01`));
 }
 
+const fmtNomMois = new Intl.DateTimeFormat('fr-FR', { month: 'long', timeZone: 'UTC' });
+
+// « décembre » : mois seul, en minuscules (usage en milieu de phrase).
+export function formatNomMois(mois) {
+  return fmtNomMois.format(dateUTC(`${mois}-01`));
+}
+
 export function majuscule(texte) {
   return texte.charAt(0).toUpperCase() + texte.slice(1);
 }

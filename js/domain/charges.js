@@ -28,7 +28,7 @@ export function creerCharge({ nom, montant, jour }, moisCourant) {
 }
 
 // Dernière entrée d'historique en vigueur à `mois`, ou null si la charge n'est pas active.
-function entreeEnVigueur(charge, mois) {
+export function entreeEnVigueur(charge, mois) {
   if (mois < charge.actifDepuis) return null;
   if (charge.actifJusqua !== undefined && mois > charge.actifJusqua) return null;
   let retenue = null;
@@ -44,6 +44,20 @@ export function montantCharge(charge, mois) {
 
 export function chargesDuMois(charges, mois) {
   return charges.reduce((total, c) => total + montantCharge(c, mois), 0);
+}
+
+// Charges déduites ce mois-ci, par jour de prélèvement puis par nom. Une charge supprimée
+// un mois précédent n'y figure jamais (et n'est donc plus modifiable).
+export function chargesActives(charges, mois) {
+  return charges
+    .filter((c) => montantCharge(c, mois) > 0)
+    .sort((a, b) => (entreeEnVigueur(a, mois).jour - entreeEnVigueur(b, mois).jour) || a.nom.localeCompare(b.nom, 'fr'));
+}
+
+// Première entrée d'historique postérieure à `mois`, si la charge est encore active après lui.
+export function prochainChangement(charge, mois) {
+  if (charge.actifJusqua !== undefined && charge.actifJusqua <= mois) return null;
+  return charge.historique.find((e) => e.depuis > mois) ?? null;
 }
 
 // Le changement vaut dès le mois suivant ; le mois de création, c'est une correction immédiate.
