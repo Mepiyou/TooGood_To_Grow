@@ -358,3 +358,61 @@ Une story = une branche = une vérification du budget de performance.
 - [ ] Testé en 3G simulée, à 320 px de large et en mode avion.
 - [ ] Contrôles d'accessibilité de la section 10 respectés.
 - [ ] Grille RGESN mise à jour si la story touche un critère.
+---
+
+## 15. Décisions (validées le 2026-11-12)
+
+Ces décisions complètent ou précisent les sections ci-dessus. En cas de contradiction avec une section antérieure de cette spec, **cette section prime** (les règles métier de `Brief.md` restent au-dessus).
+
+### Calculs
+
+| # | Sujet | Décision |
+|---|---|---|
+| D1 | Période budgétaire | Mois calendaire. Chaque revenu a une option **« Compte pour le mois suivant »** (champ `moisSuivant`, booléen, `false` par défaut, store `revenus`). Si elle est cochée, un revenu reçu le jour J du mois M compte dans les revenus reçus de M+1, **dès le 1er du mois**, et pas dans ceux de M. Dans le formulaire de revenu : case à cocher sous la date. Les tests T1 à T15 passent les montants reçus directement. |
+| D1b | Prochaine rentrée et `moisSuivant` | Un revenu `moisSuivant` n'alimente pas le mois en cours : il est **ignoré** dans le calcul de la prochaine rentrée (§4.5). *(Conséquence de D1, à confirmer.)* |
+| D2 | Report de solde | Aucun report d'un mois sur l'autre en V1 (ni excédent ni déficit). |
+| D3 | Prochaine rentrée | Recherche **uniquement dans le mois en cours** (strictement après `aujourdhui`) ; sinon dernier jour du mois. On ne regarde pas le mois suivant (remplace §4.5, 1er point). |
+| D4 | Modification / suppression d'un revenu | Effet immédiat, y compris sur le mois en cours. Pas d'historique. |
+| D5 | Suppression d'une charge | Champ `actifJusqua` (AAAA-MM) = mois en cours : la charge reste déduite ce mois-ci et disparaît le mois suivant. |
+| D6 | Correction d'une charge le mois de sa création | Si `actifDepuis` = mois en cours, la modification s'applique **immédiatement** (on remplace l'entrée d'historique du mois au lieu d'ajouter `{ depuis: M+1 }`). |
+| D7 | « Total du mois » (écran Revenus) | Somme des revenus **attendus** sur le mois (récurrents actifs + ponctuels du mois), reçus ou non. Les revenus **reçus** ne servent qu'au reste à vivre. |
+| D21 | Validation des montants revenus / charges | Même analyseur que les dépenses : > 0, 2 décimales max, virgule ou point. |
+
+### Tests et organisation
+
+| # | Sujet | Décision |
+|---|---|---|
+| D8 | Tests touchant IndexedDB / import (T9, T10, T11, T13) | Écrits comme **fonctions pures** dans `domain/` (plan de suppression d'un mois, réaffectation de catégorie, `validerImport`). La transaction IndexedDB est vérifiée manuellement. |
+| D9 | Fichiers supplémentaires | `js/domain/montant.js` + `tests/montant.test.js` (T12), `js/domain/import.js` + `tests/import.test.js` (T13), `tests/alertes.test.js` (T15). |
+| D10 | TDD | Pour chaque étape : écrire ses tests, constater l'échec, implémenter. |
+| D11 | Branches | Un seul worktree, une branche `feat/v1`, un commit par tâche, un tag par étape (`etape-0` … `etape-7`). Remplace « une story = une branche » (§13). |
+| T16 | Nouveau test | Job 400 €, reçu le 30 octobre 2026, `moisSuivant = true`, `aujourdhui = 2026-11-01` → compté dans les revenus reçus de novembre (et pas dans ceux d'octobre). Fichier `tests/budget.test.js`, étape 1. |
+
+### Découpage des étapes
+
+| # | Sujet | Décision |
+|---|---|---|
+| D12 | Gherkin US4 | Vérifié partiellement à l'étape 3, complètement à l'étape 4 (« Dernières dépenses » et solde recalculé). |
+| D13 | Catégories et liste des dépenses | Étape 3 : catégories par défaut, bouton « + Nouvelle », liste `#/depenses` avec Modifier / Supprimer. Étape 6 : camembert et écran « Gérer les catégories » (renommer, supprimer, T11). |
+| D14 | Éléments V2 | Onglet « Provisions » et entrée « Enveloppes » de la barre du bas **masqués** jusqu'à l'étape 7. |
+
+### Interface et textes
+
+| # | Sujet | Décision |
+|---|---|---|
+| D15 | Ligne de revenu | Nom ; sous-titre « Récurrent · le 5 » (ou « Ponctuel · le 12 nov. ») ; montant à droite. |
+| D16 | Format des montants | Centimes affichés seulement s'ils sont non nuls : « 450 € », « 12,50 € ». |
+| D17 | Champ `note` des dépenses | Non affiché en V1 (le champ reste optionnel dans le modèle). |
+| D18 | Textes | Avertissement reste à vivre négatif : « Tu as dépassé ton budget de 20 €. Pas de panique : limite tes dépenses jusqu'au 25. » — Bandeau hors ligne : « Hors ligne · tes saisies sont enregistrées sur ce téléphone. » — Premier lancement : « Commence par ajouter tes revenus » + bouton « Ajouter mon premier revenu » → `#/mois/revenus`. |
+| D19 | Regroupement du camembert | Au-delà de 5 catégories, le surplus est fusionné dans « Autre » (pas de libellé « Autres »). |
+| D20 | Date d'une dépense | Interdite dans le futur et dans un mois dont le détail a été supprimé (`detailSupprime: true`). |
+
+### Pratique
+
+| # | Sujet | Décision |
+|---|---|---|
+| D22 | Brief | Fichier renommé `Brief.md`. |
+| D23 | Dépôt | Commit initial sur `master` (Brief, spec, `.gitignore` excluant `.idea/` et `*.iml`). |
+| D24 | Icônes PWA | PNG générés par un script Node (zlib, sans dépendance) : carré `#0B6E4F`, « TG » en blanc. |
+| D25 | Mesures non automatisables | Test sur iPhone 8 réel (mode avion) et EcoIndex : notés « à faire par l'équipe » dans `MESURES.md`. |
+| D26 | Maquette | Le lien Claude Design n'est pas consulté : la section `<maquette>` de `Brief.md` fait foi. |
