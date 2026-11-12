@@ -38,8 +38,7 @@ function requete(store, mode, action) {
     const tx = db.transaction(store, mode);
     const demande = action(tx.objectStore(store));
     tx.oncomplete = () => resolve(demande.result);
-    tx.onerror = () => reject(tx.error);
-    tx.onabort = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error || new Error('Transaction annulée'));
   }));
 }
 
@@ -68,7 +67,6 @@ export function transaction(stores, mode, fn) {
   return ouvrirDB().then((db) => new Promise((resolve, reject) => {
     const tx = db.transaction(stores, mode);
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
     tx.onabort = () => reject(tx.error || new Error('Transaction annulée'));
     try {
       fn(tx);

@@ -1,15 +1,16 @@
 import { lireTout, transaction } from '../db.js';
 import { CATEGORIES_PAR_DEFAUT } from '../domain/categories.js';
 
-// Idempotent : n'ajoute que les catégories par défaut absentes, ne touche pas aux existantes.
-export async function initialiserCategories() {
-  const existantes = await lireTout('categories');
-  const ids = new Set(existantes.map((c) => c.id));
-  const manquantes = CATEGORIES_PAR_DEFAUT.filter((c) => !ids.has(c.id));
-  if (manquantes.length === 0) return;
-  await transaction(['categories'], 'readwrite', (tx) => {
+// Idempotent, même en cas d'appels concurrents : la lecture et l'ajout se font dans
+// une seule transaction readwrite, donc sérialisée par IndexedDB.
+export function initialiserCategories() {
+  return transaction(['categories'], 'readwrite', (tx) => {
     const store = tx.objectStore('categories');
-    for (const categorie of manquantes) store.add({ ...categorie });
+    for (const categorie of CATEGORIES_PAR_DEFAUT) {
+      store.get(categorie.id).onsuccess = (e) => {
+        if (e.target.result === undefined) store.add({ ...categorie });
+      };
+    }
   });
 }
 
