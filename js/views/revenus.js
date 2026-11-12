@@ -173,6 +173,11 @@ export async function render(container, params, ctx) {
     if (cible) cible.focus();
   }
 
+  // Échap ne doit pas fermer le formulaire pendant l'écriture : une erreur serait affichée dans un dialog fermé.
+  dialog.addEventListener('cancel', (e) => {
+    if (occupe) e.preventDefault();
+  });
+
   dialog.addEventListener('close', () => {
     const declencheur = enCours && enCours.declencheur;
     enCours = null;
