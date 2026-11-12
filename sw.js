@@ -3,7 +3,8 @@ const CACHE = 'toogood-' + '__VERSION__';
 const FICHIERS = '__FICHIERS__';
 
 self.addEventListener('install', (evenement) => {
-  evenement.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(FICHIERS)));
+  // no-cache : revalide chaque fichier auprès du serveur, sinon le cache HTTP pourrait fournir d'anciennes versions.
+  evenement.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(FICHIERS.map((f) => new Request(f, { cache: 'no-cache' })))));
 });
 
 self.addEventListener('activate', (evenement) => {
