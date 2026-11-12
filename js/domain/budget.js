@@ -1,8 +1,6 @@
 import { moisDe, moisPrecedent, construireDate, joursDansMois } from './dates.js';
-import { jourEffectif } from './charges.js';
+import { jourEffectif, validerNom, validerJour } from './charges.js';
 import { parseMontant } from './montant.js';
-
-const NOM_MAX = 40;
 
 // Date de réception qui finance `mois`, ou null. Avec « mois suivant », le
 // revenu reçu le mois précédent finance `mois`.
@@ -54,19 +52,17 @@ function dateValide(date) {
 
 export function validerRevenu({ nom, montantTexte, recurrent, jour, date, moisSuivant, mois }) {
   const erreurs = {};
-  const nomNet = String(nom ?? '').trim();
-  if (nomNet === '') erreurs.nom = 'Le nom est obligatoire.';
-  else if (nomNet.length > NOM_MAX) erreurs.nom = '40 caractères maximum.';
+  const nomVerifie = validerNom(nom);
+  if (nomVerifie.erreur) erreurs.nom = nomVerifie.erreur;
 
   const montant = parseMontant(montantTexte);
   if (!montant.ok) erreurs.montant = montant.erreur;
 
   const valeurs = {};
   if (recurrent) {
-    const texte = String(jour ?? '').trim();
-    const n = /^\d+$/.test(texte) ? Number(texte) : NaN;
-    if (n >= 1 && n <= 31) valeurs.jour = n;
-    else erreurs.jour = 'Choisis un jour entre 1 et 31.';
+    const jourVerifie = validerJour(jour);
+    if (jourVerifie.erreur) erreurs.jour = jourVerifie.erreur;
+    else valeurs.jour = jourVerifie.valeur;
   } else if (dateValide(date)) {
     // Une date hors du mois affiché ferait disparaître le revenu de la liste, sans moyen de le corriger.
     const mDate = moisDe(date);
@@ -80,6 +76,6 @@ export function validerRevenu({ nom, montantTexte, recurrent, jour, date, moisSu
   return {
     ok: true,
     erreurs,
-    valeurs: { nom: nomNet, montant: montant.centimes, recurrent: Boolean(recurrent), ...valeurs, moisSuivant: Boolean(moisSuivant) },
+    valeurs: { nom: nomVerifie.valeur, montant: montant.centimes, recurrent: Boolean(recurrent), ...valeurs, moisSuivant: Boolean(moisSuivant) },
   };
 }
