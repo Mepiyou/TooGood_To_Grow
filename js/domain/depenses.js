@@ -1,4 +1,5 @@
 import { dateValide, moisDe, comparer } from './dates.js';
+import { parseMontant } from './montant.js';
 
 export function validerDateDepense(date, aujourdhui, moisDetailSupprime) {
   if (!dateValide(date)) return 'Date invalide.';
@@ -9,4 +10,34 @@ export function validerDateDepense(date, aujourdhui, moisDetailSupprime) {
 
 export function trierParDateDesc(depenses) {
   return [...depenses].sort((a, b) => comparer(b.date, a.date) || comparer(b.creeLe ?? '', a.creeLe ?? ''));
+}
+
+export function moisDetailSupprime(resumes) {
+  return resumes.filter((r) => r.detailSupprime === true).map((r) => r.mois);
+}
+
+// Saisie de l'écran d'ajout : un message par champ en erreur (`montant`, `categorie`, `date`).
+export function validerDepense({ montantTexte, categorieId, date }, { aujourdhui, moisDetailSupprime: moisSupprimes, categories }) {
+  const erreurs = {};
+  const montant = parseMontant(montantTexte);
+  if (!montant.ok) erreurs.montant = montant.erreur;
+  if (!categories.some((c) => c.id === categorieId)) erreurs.categorie = 'Choisis une catégorie.';
+  const erreurDate = validerDateDepense(date, aujourdhui, moisSupprimes);
+  if (erreurDate) erreurs.date = erreurDate;
+  const ok = Object.keys(erreurs).length === 0;
+  return { ok, erreurs, valeurs: ok ? { montant: montant.centimes, categorieId, date } : null };
+}
+
+// En modification, `creeLe` et la `note` éventuelle (D17, non affichée) sont conservés.
+export function construireDepense({ id, montant, categorieId, date }, existant, maintenant) {
+  return {
+    ...existant,
+    id,
+    montant,
+    categorieId,
+    date,
+    mois: moisDe(date),
+    creeLe: existant ? existant.creeLe : maintenant,
+    modifieLe: maintenant,
+  };
 }

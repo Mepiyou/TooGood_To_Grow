@@ -6,12 +6,14 @@ import { initBanniereHorsLigne, afficherBanniereMaj } from './ui/banniere.js';
 import { render as renderAccueil } from './views/accueil.js';
 import { render as renderRevenus } from './views/revenus.js';
 import { render as renderCharges } from './views/charges.js';
+import { render as renderAjout } from './views/ajout.js';
 
 // Vues des étapes suivantes : le routeur affiche l'accueil tant qu'elles n'existent pas.
 const vues = {
   accueil: { render: renderAccueil },
   revenus: { render: renderRevenus },
   charges: { render: renderCharges },
+  ajout: { render: renderAjout },
 };
 
 const MESSAGE_ERREUR = "Impossible d'ouvrir les données de l'application sur ce téléphone. Si tu es en navigation privée, ouvre l'app dans un onglet normal.";
@@ -23,10 +25,15 @@ async function demarrer() {
   await initialiserCategories();
 
   let routeur = null;
+  // Nombre de navigations internes depuis le chargement : « ← Retour » n'utilise history.back()
+  // que si l'entrée précédente appartient à l'app (sinon ouverture directe sur l'écran).
+  let navigationsInternes = 0;
+  window.addEventListener('hashchange', () => { navigationsInternes += 1; });
   const ctx = {
     aujourdhui: () => versISO(new Date()),
     naviguer: (hash) => { window.location.hash = hash; },
     rafraichir: () => (routeur ? routeur.rafraichir() : undefined),
+    peutRevenir: () => navigationsInternes > 0,
   };
   routeur = demarrerRouteur(document.getElementById('app'), vues, ctx);
 }

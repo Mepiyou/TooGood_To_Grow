@@ -23,3 +23,17 @@ export function validerCategorie({ nom, couleur }, categories, idEnCours) {
   if (!PALETTE.includes(couleur)) return { champ: 'couleur', message: 'Choisis une couleur.' };
   return null;
 }
+
+// Écran d'ajout (spec § 9) : catégories par défaut, puis créées, chacune par `ordre`.
+export function trierCategories(categories) {
+  return [...categories].sort((a, b) => (Number(b.parDefaut) - Number(a.parDefaut)) || (a.ordre - b.ordre));
+}
+
+// Une dépense dont la catégorie n'existe plus est rattachée à « Autre ».
+export function categorieDeRepli(categorieId, categories) {
+  return categories.some((c) => c.id === categorieId) ? categorieId : 'autre';
+}
+
+export function prochainOrdre(categories) {
+  return categories.reduce((max, c) => Math.max(max, c.ordre + 1), 0);
+}
