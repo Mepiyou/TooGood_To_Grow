@@ -59,6 +59,20 @@ test('validerRevenu : cas limites', () => {
   assert.equal(validerRevenu({ nom: 'B', montantTexte: '1', recurrent: true, jour: '1.5' }).erreurs.jour, 'Choisis un jour entre 1 et 31.');
   assert.equal(validerRevenu({ nom: 'B', montantTexte: '1', recurrent: true, jour: 0 }).erreurs.jour, 'Choisis un jour entre 1 et 31.');
   assert.equal(validerRevenu({ nom: 'B', montantTexte: '1', recurrent: false, date: '2026-02-30' }).erreurs.date, 'Choisis une date.');
-  assert.deepEqual(validerRevenu({ nom: 'B', montantTexte: '1', recurrent: false, date: '2026-11-08', jour: 5, moisSuivant: true }).valeurs,
+  assert.deepEqual(validerRevenu({ nom: 'B', montantTexte: '1', recurrent: false, date: '2026-11-08', mois: '2026-11', jour: 5, moisSuivant: true }).valeurs,
     { nom: 'B', montant: 100, recurrent: false, date: '2026-11-08', moisSuivant: true });
+});
+test('validerRevenu : date d\'un ponctuel limitée au mois affiché (D27)', () => {
+  const v = (date, moisSuivant = false, mois = '2026-11') =>
+    validerRevenu({ nom: 'B', montantTexte: '1', recurrent: false, date, mois, moisSuivant });
+  const MSG = 'Choisis une date de ce mois-ci.';
+  assert.equal(v('2026-11-20').ok, true);
+  assert.equal(v('2026-12-02').erreurs.date, MSG);
+  assert.equal(v('2026-12-02', true).erreurs.date, MSG);
+  assert.equal(v('2026-10-30').erreurs.date, MSG);
+  assert.equal(v('2026-10-30', true).ok, true);
+  assert.equal(v('2026-09-30', true).erreurs.date, MSG);
+  assert.equal(v('2026-12-30', true, '2027-01').ok, true);
+  assert.equal(v('', true).erreurs.date, 'Choisis une date.');
+  assert.equal(validerRevenu({ nom: 'B', montantTexte: '1', recurrent: true, jour: 5, mois: '2026-11' }).ok, true);
 });

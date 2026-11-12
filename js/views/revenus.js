@@ -3,7 +3,7 @@ import { formatMontant, formatJourMois } from '../ui/format.js';
 import { rendreOngletsMois } from '../ui/onglets.js';
 import { revenusDuMois, totalRevenusAttendus, validerRevenu } from '../domain/budget.js';
 import { centimesVersSaisie } from '../domain/montant.js';
-import { moisDe } from '../domain/dates.js';
+import { moisDe, moisPrecedent, joursDansMois, construireDate } from '../domain/dates.js';
 import { listerRevenus, enregistrerRevenu, supprimerRevenu } from '../store/revenus.js';
 
 const MENTION_MOIS_SUIVANT = 'compte le mois suivant';
@@ -114,6 +114,12 @@ export async function render(container, params, ctx) {
     for (const bloc of dialog.querySelectorAll('[data-pour]')) bloc.hidden = bloc.dataset.pour !== type;
   }
 
+  // Aide de saisie seulement : la validation du domaine reste la référence (Safari iOS n'applique pas toujours min/max).
+  function majBornesDate() {
+    champs.date.min = `${champs.moisSuivant.checked ? moisPrecedent(mois) : mois}-01`;
+    champs.date.max = construireDate(mois, joursDansMois(mois));
+  }
+
   function afficherErreurs(erreurs) {
     let premier = null;
     for (const champ of CHAMPS) {
@@ -153,6 +159,7 @@ export async function render(container, params, ctx) {
     champs.date.value = revenu && !revenu.recurrent ? revenu.date : ctx.aujourdhui();
     champs.moisSuivant.checked = Boolean(revenu && revenu.moisSuivant);
     majType();
+    majBornesDate();
     dialog.showModal();
     champs.nom.focus();
   }
@@ -186,6 +193,7 @@ export async function render(container, params, ctx) {
 
   form.addEventListener('change', (e) => {
     if (e.target.name === 'type') majType();
+    if (e.target.name === 'moisSuivant') majBornesDate();
   });
 
   form.addEventListener('submit', async (e) => {
@@ -199,6 +207,7 @@ export async function render(container, params, ctx) {
       jour: champs.jour.value,
       date: champs.date.value,
       moisSuivant: champs.moisSuivant.checked,
+      mois,
     });
     afficherErreurs(resultat.erreurs);
     if (!resultat.ok) return;

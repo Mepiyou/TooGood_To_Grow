@@ -52,7 +52,7 @@ function dateValide(date) {
   return mois >= 1 && mois <= 12 && Number(m[3]) >= 1 && Number(m[3]) <= joursDansMois(`${m[1]}-${m[2]}`);
 }
 
-export function validerRevenu({ nom, montantTexte, recurrent, jour, date, moisSuivant }) {
+export function validerRevenu({ nom, montantTexte, recurrent, jour, date, moisSuivant, mois }) {
   const erreurs = {};
   const nomNet = String(nom ?? '').trim();
   if (nomNet === '') erreurs.nom = 'Le nom est obligatoire.';
@@ -68,7 +68,10 @@ export function validerRevenu({ nom, montantTexte, recurrent, jour, date, moisSu
     if (n >= 1 && n <= 31) valeurs.jour = n;
     else erreurs.jour = 'Choisis un jour entre 1 et 31.';
   } else if (dateValide(date)) {
-    valeurs.date = date;
+    // Une date hors du mois affiché ferait disparaître le revenu de la liste, sans moyen de le corriger.
+    const mDate = moisDe(date);
+    if (mDate === mois || (moisSuivant && mDate === moisPrecedent(mois))) valeurs.date = date;
+    else erreurs.date = 'Choisis une date de ce mois-ci.';
   } else {
     erreurs.date = 'Choisis une date.';
   }
