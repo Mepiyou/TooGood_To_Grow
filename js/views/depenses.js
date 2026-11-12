@@ -1,4 +1,4 @@
-import { echapper } from '../ui/dom.js';
+import { echapper, couleurSure, COULEUR_REPLI } from '../ui/dom.js';
 import { formatMontant, formatJourSemaine } from '../ui/format.js';
 import { categorieDeRepli } from '../domain/categories.js';
 import { groupesParJour, totalDepenses } from '../domain/depenses.js';
@@ -7,12 +7,6 @@ import { listerCategories } from '../store/categories.js';
 import { depensesDuMois, supprimerDepense } from '../store/depenses.js';
 
 const ERREUR_SUPPRESSION = 'Impossible de supprimer la dépense. Réessaie.';
-const COULEUR_REPLI = '#9AA0A6';
-
-// La couleur est injectée dans un attribut style : seule une couleur hexadécimale est acceptée.
-function couleurSure(couleur) {
-  return /^#[0-9A-Fa-f]{6}$/.test(couleur) ? couleur : COULEUR_REPLI;
-}
 
 // « Courses, 12 € » : suffixe des aria-label « Modifier : … » et « Supprimer : … ».
 export function libelleDepense(nomCategorie, montant) {

@@ -1,5 +1,5 @@
 import { lireTout } from '../db.js';
-import { echapper } from '../ui/dom.js';
+import { echapper, couleurSure } from '../ui/dom.js';
 import { ouvrirFormCategorie } from '../ui/form-categorie.js';
 import { categorieDeRepli } from '../domain/categories.js';
 import { dateAJour } from '../domain/dates.js';
@@ -9,12 +9,6 @@ import { listerCategories } from '../store/categories.js';
 import { lireDepense, enregistrerDepense } from '../store/depenses.js';
 
 const ERREUR_ENREGISTREMENT = "Impossible d'enregistrer la dépense. Réessaie.";
-const COULEUR_REPLI = '#9AA0A6';
-
-// La couleur est injectée dans un attribut style : seule une couleur hexadécimale est acceptée.
-function couleurSure(couleur) {
-  return /^#[0-9A-Fa-f]{6}$/.test(couleur) ? couleur : COULEUR_REPLI;
-}
 
 export function rendreBoutonCategorie(categorie, choisie) {
   return `<button type="button" class="categorie" data-id="${echapper(categorie.id)}" aria-pressed="${choisie ? 'true' : 'false'}">`
