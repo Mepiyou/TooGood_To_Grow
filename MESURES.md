@@ -3,6 +3,7 @@
 | Étape | Date | Requêtes | Poids brut (Ko) | Poids gzip (Ko) | LCP 4G/3G | Lighthouse a11y | 320 px | Remarques |
 |-------|------|----------|-----------------|-----------------|-----------|-----------------|--------|-----------|
 | 0. Socle | 2026-11-12 | 8 | 29,1 | 10,5 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | `node tools/mesurer.mjs dist` (build v5-b2e1d431) : 0 URL externe, budget respecté |
+| 1. Revenus (US1) | 2026-11-12 | 8 | 50,3 | 16,3 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US1 revenus. `node tools/mesurer.mjs dist` (build v7-065a78a0) : 0 URL externe, budget respecté |
 
 Limite de l'outil : les requêtes d'installation du service worker (précache) ne sont pas comptées en plus du premier chargement.
 
@@ -33,3 +34,4 @@ Base vide au départ (DevTools › Application › Storage › Clear site data),
 6. **Erreurs** : montant « abc » et jour 32 → « Montant invalide. » sous le montant, « Choisis un jour entre 1 et 31. » sous le jour, focus sur le montant (premier champ en erreur) ; nom vide → « Le nom est obligatoire. ». Un lecteur d'écran lit le message avec le champ.
 7. **Clavier** : Tab jusqu'à « Ajouter un revenu », Entrée → focus sur « Nom », Tab parcourt les champs sans sortir du dialog, Échap ferme le dialog et rend le focus au bouton ; même chose depuis une ligne (le focus revient sur la ligne). L'onglet du navigateur s'intitule « Mon mois – Revenus · TooGood To Grow ».
 8. **320 px** (mode responsive) : liste, total et dialog ouvert tiennent sans défilement horizontal ; les noms longs passent à la ligne, le montant reste sur une ligne ; boutons et cases ≥ 44 px.
+9. **iPhone 8 (Safari iOS 16)** : le champ date s'affiche en pleine largeur et aligné à gauche ; avec le clavier ouvert, le formulaire reste visible et le bouton Enregistrer accessible.
