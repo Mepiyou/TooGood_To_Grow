@@ -94,9 +94,10 @@ export async function render(container, params, ctx) {
     const nouvelle = hote ? hote.querySelector('.vue-depenses') : null;
     if (!nouvelle) return;
     const suivant = idAFocaliser(ordre, id);
-    const ligne = suivant ? nouvelle.querySelector(`li[data-id="${CSS.escape(suivant)}"] button[data-action="supprimer"]`) : null;
-    if (ligne) {
-      ligne.focus();
+    // Le lien « Modifier » est non destructif : un tap réflexe n'ouvre pas de confirmation de suppression.
+    const lien = suivant ? nouvelle.querySelector(`li[data-id="${CSS.escape(suivant)}"] a.bouton-icone`) : null;
+    if (lien) {
+      lien.focus();
     } else {
       const titre = nouvelle.querySelector('h1');
       titre.setAttribute('tabindex', '-1');
