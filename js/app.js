@@ -42,9 +42,11 @@ const VERSION = '__VERSION__';
 
 function enregistrerServiceWorker() {
   if (!/^v\d+$/.test(VERSION) || !('serviceWorker' in navigator)) return;
+  // À la première installation, clients.claim() déclenche aussi controllerchange : pas de rechargement alors.
+  const avaitControleur = !!navigator.serviceWorker.controller;
   let rechargement = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (rechargement) return;
+    if (!avaitControleur || rechargement) return;
     rechargement = true;
     window.location.reload();
   });
