@@ -377,6 +377,7 @@ Ces décisions complètent ou précisent les sections ci-dessus. En cas de contr
 | D6 | Correction d'une charge le mois de sa création | Si `actifDepuis` = mois en cours, la modification s'applique **immédiatement** (on remplace l'entrée d'historique du mois au lieu d'ajouter `{ depuis: M+1 }`). |
 | D7 | « Total du mois » (écran Revenus) | Somme des revenus **attendus** sur le mois (récurrents actifs + ponctuels du mois), reçus ou non. Les revenus **reçus** ne servent qu'au reste à vivre. |
 | D21 | Validation des montants revenus / charges | Même analyseur que les dépenses : > 0, 2 décimales max, virgule ou point. |
+| D27 | Date d'un revenu ponctuel | Limitée au mois courant, ou au mois précédent si « Compte pour le mois suivant » est coché ; sinon erreur « Choisis une date de ce mois-ci. » (décision utilisateur du 2026-11-12, option A). |
 
 ### Tests et organisation
 

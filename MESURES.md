@@ -35,3 +35,4 @@ Base vide au départ (DevTools › Application › Storage › Clear site data),
 7. **Clavier** : Tab jusqu'à « Ajouter un revenu », Entrée → focus sur « Nom », Tab parcourt les champs sans sortir du dialog, Échap ferme le dialog et rend le focus au bouton ; même chose depuis une ligne (le focus revient sur la ligne). L'onglet du navigateur s'intitule « Mon mois – Revenus · TooGood To Grow ».
 8. **320 px** (mode responsive) : liste, total et dialog ouvert tiennent sans défilement horizontal ; les noms longs passent à la ligne, le montant reste sur une ligne ; boutons et cases ≥ 44 px.
 9. **iPhone 8 (Safari iOS 16)** : le champ date s'affiche en pleine largeur et aligné à gauche ; avec le clavier ouvert, le formulaire reste visible et le bouton Enregistrer accessible.
+10. **Date d'un revenu ponctuel** : daté du mois prochain → message « Choisis une date de ce mois-ci. » ; daté du mois dernier avec « Compte pour le mois suivant » coché → accepté et visible.
