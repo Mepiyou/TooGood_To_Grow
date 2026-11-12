@@ -1,8 +1,12 @@
+import { moisAChange } from '../domain/dates.js';
+
 // Panneau de formulaire (dialog natif) commun aux écrans de « Mon mois ».
 // Le dialog doit contenir un `form` avec un champ par nom de `champs`, un message d'erreur
 // `#<prefixe>-<champ>-erreur` sous chaque champ, un `.erreur-formulaire` et un bouton `[data-action="annuler"]`.
 // `selecteurVue` désigne la racine de la vue, retrouvée après rafraîchissement pour y poser le focus.
-export function creerPanneau(container, { prefixe, champs, selecteurVue, rafraichir }) {
+// `moisAffiche` est le mois de l'écran, `aujourdhui` renvoie la date du jour : si le mois a changé depuis le rendu,
+// rien n'est écrit, le panneau se ferme et l'écran est rafraîchi.
+export function creerPanneau(container, { prefixe, champs, selecteurVue, rafraichir, moisAffiche, aujourdhui }) {
   const dialog = container.querySelector('dialog');
   const form = dialog.querySelector('form');
   const erreurFormulaire = dialog.querySelector('.erreur-formulaire');
@@ -69,9 +73,17 @@ export function creerPanneau(container, { prefixe, champs, selecteurVue, rafraic
     if (cible) cible.focus();
   }
 
+  // Vrai (et écran rafraîchi) si le mois a changé : l'appelant ne doit alors rien écrire.
+  function moisPerime() {
+    if (!moisAChange(moisAffiche, aujourdhui())) return false;
+    terminer(null);
+    return true;
+  }
+
   // `action` écrit puis renvoie l'id à focaliser (ou null) ; en cas d'échec, le message reste dans le dialog.
   async function executer(action, messageEchec) {
     if (occupe || !enCours) return;
+    if (moisPerime()) return;
     occuper(true);
     try {
       const id = await action();
@@ -87,6 +99,7 @@ export function creerPanneau(container, { prefixe, champs, selecteurVue, rafraic
   async function supprimer(question, action, messageEchec) {
     if (occupe || !enCours || !enCours.element) return;
     if (!window.confirm(question)) return;
+    if (moisPerime()) return;
     await executer(async () => {
       await action();
       return null;
@@ -113,6 +126,7 @@ export function creerPanneau(container, { prefixe, champs, selecteurVue, rafraic
     afficherErreurs,
     signalerEchec,
     masquerEchec,
+    moisPerime,
     executer,
     supprimer,
     // Élément en cours de modification : undefined si le dialog est fermé, null en ajout.

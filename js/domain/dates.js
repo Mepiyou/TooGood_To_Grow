@@ -41,6 +41,11 @@ export function moisPrecedent(mois) {
   return decalerMois(mois, -1);
 }
 
+// Vrai si le mois du jour n'est plus celui de l'écran (appli restée ouverte au-delà d'une fin de mois).
+export function moisAChange(moisAffiche, aujourdhui) {
+  return moisDe(aujourdhui) !== moisAffiche;
+}
+
 export function construireDate(mois, jour) {
   return `${mois}-${deux(jour)}`;
 }

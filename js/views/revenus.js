@@ -100,7 +100,7 @@ export async function render(container, params, ctx) {
 
   const parId = new Map(liste.map((r) => [r.id, r]));
   const panneau = creerPanneau(container, {
-    prefixe: 'revenu', champs: CHAMPS, selecteurVue: '.vue-revenus', rafraichir: ctx.rafraichir,
+    prefixe: 'revenu', champs: CHAMPS, selecteurVue: '.vue-revenus', rafraichir: ctx.rafraichir, moisAffiche: mois, aujourdhui: ctx.aujourdhui,
   });
   const { dialog, champs } = panneau;
   const form = dialog.querySelector('form');
@@ -142,6 +142,7 @@ export async function render(container, params, ctx) {
     e.preventDefault();
     const revenu = panneau.courant();
     if (panneau.estOccupe() || revenu === undefined) return;
+    if (panneau.moisPerime()) return;
     panneau.masquerEchec();
     const resultat = validerRevenu({
       nom: champs.nom.value,

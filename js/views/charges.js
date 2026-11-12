@@ -111,7 +111,7 @@ export async function render(container, params, ctx) {
 
   const parId = new Map(liste.filter((c) => !estSupprimee(c, mois)).map((c) => [c.id, c]));
   const panneau = creerPanneau(container, {
-    prefixe: 'charge', champs: CHAMPS, selecteurVue: '.vue-charges', rafraichir: ctx.rafraichir,
+    prefixe: 'charge', champs: CHAMPS, selecteurVue: '.vue-charges', rafraichir: ctx.rafraichir, moisAffiche: mois, aujourdhui: ctx.aujourdhui,
   });
   const { dialog, champs } = panneau;
   const form = dialog.querySelector('form');
@@ -138,6 +138,7 @@ export async function render(container, params, ctx) {
     e.preventDefault();
     const charge = panneau.courant();
     if (panneau.estOccupe() || charge === undefined) return;
+    if (panneau.moisPerime()) return;
     panneau.masquerEchec();
     const resultat = validerCharge({ nom: champs.nom.value, montantTexte: champs.montant.value, jour: champs.jour.value });
     panneau.afficherErreurs(resultat.erreurs);
