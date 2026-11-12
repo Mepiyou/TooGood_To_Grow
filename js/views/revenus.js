@@ -1,6 +1,7 @@
 import { echapper } from '../ui/dom.js';
 import { formatMontant, formatJourMois } from '../ui/format.js';
 import { rendreOngletsMois } from '../ui/onglets.js';
+import { creerPanneau } from '../ui/panneau.js';
 import { revenusDuMois, totalRevenusAttendus, validerRevenu } from '../domain/budget.js';
 import { centimesVersSaisie } from '../domain/montant.js';
 import { moisDe, moisPrecedent, joursDansMois, construireDate } from '../domain/dates.js';
@@ -98,16 +99,13 @@ export async function render(container, params, ctx) {
   </div>`;
 
   const parId = new Map(liste.map((r) => [r.id, r]));
-  const dialog = container.querySelector('dialog');
+  const panneau = creerPanneau(container, {
+    prefixe: 'revenu', champs: CHAMPS, selecteurVue: '.vue-revenus', rafraichir: ctx.rafraichir,
+  });
+  const { dialog, champs } = panneau;
   const form = dialog.querySelector('form');
-  const champs = form.elements;
   const titre = dialog.querySelector('#revenu-titre');
-  const erreurFormulaire = dialog.querySelector('.erreur-formulaire');
   const boutonSupprimer = dialog.querySelector('[data-action="supprimer"]');
-  const boutons = [...dialog.querySelectorAll('button')];
-
-  let enCours = null; // { revenu (ou null en ajout), declencheur }
-  let occupe = false;
 
   function majType() {
     const type = champs.type.value;
@@ -120,86 +118,31 @@ export async function render(container, params, ctx) {
     champs.date.max = construireDate(mois, joursDansMois(mois));
   }
 
-  function afficherErreurs(erreurs) {
-    let premier = null;
-    for (const champ of CHAMPS) {
-      const input = champs[champ];
-      const message = dialog.querySelector(`#revenu-${champ}-erreur`);
-      const texte = erreurs[champ] || '';
-      message.textContent = texte;
-      message.hidden = texte === '';
-      if (texte) {
-        input.setAttribute('aria-invalid', 'true');
-        input.setAttribute('aria-describedby', message.id);
-        if (!premier) premier = input;
-      } else {
-        input.removeAttribute('aria-invalid');
-        input.removeAttribute('aria-describedby');
-      }
-    }
-    if (premier) premier.focus();
-  }
-
-  function signalerEchec(texte) {
-    erreurFormulaire.textContent = texte;
-    erreurFormulaire.hidden = false;
-  }
-
   function ouvrir(revenu, declencheur) {
-    enCours = { revenu, declencheur };
-    form.reset();
-    afficherErreurs({});
-    erreurFormulaire.hidden = true;
-    titre.textContent = revenu ? 'Modifier le revenu' : 'Ajouter un revenu';
-    boutonSupprimer.hidden = !revenu;
-    champs.nom.value = revenu ? revenu.nom : '';
-    champs.montant.value = revenu ? centimesVersSaisie(revenu.montant) : '';
-    champs.type.value = !revenu || revenu.recurrent ? 'recurrent' : 'ponctuel';
-    champs.jour.value = revenu && revenu.recurrent ? String(revenu.jour) : '';
-    champs.date.value = revenu && !revenu.recurrent ? revenu.date : ctx.aujourdhui();
-    champs.moisSuivant.checked = Boolean(revenu && revenu.moisSuivant);
-    majType();
-    majBornesDate();
-    dialog.showModal();
-    champs.nom.focus();
+    panneau.ouvrir(revenu, declencheur, () => {
+      titre.textContent = revenu ? 'Modifier le revenu' : 'Ajouter un revenu';
+      boutonSupprimer.hidden = !revenu;
+      champs.nom.value = revenu ? revenu.nom : '';
+      champs.montant.value = revenu ? centimesVersSaisie(revenu.montant) : '';
+      champs.type.value = !revenu || revenu.recurrent ? 'recurrent' : 'ponctuel';
+      champs.jour.value = revenu && revenu.recurrent ? String(revenu.jour) : '';
+      champs.date.value = revenu && !revenu.recurrent ? revenu.date : ctx.aujourdhui();
+      champs.moisSuivant.checked = Boolean(revenu && revenu.moisSuivant);
+      majType();
+      majBornesDate();
+    });
   }
-
-  function occuper(etat) {
-    occupe = etat;
-    for (const bouton of boutons) bouton.disabled = etat;
-  }
-
-  // Après rafraîchissement, le focus va à la ligne concernée, sinon au bouton d'ajout.
-  async function terminer(idAFocaliser) {
-    dialog.close();
-    await ctx.rafraichir();
-    const vue = document.querySelector('#app .vue-revenus');
-    if (!vue) return;
-    const ligne = idAFocaliser ? vue.querySelector(`.ligne[data-id="${CSS.escape(idAFocaliser)}"]`) : null;
-    const cible = ligne || vue.querySelector('[data-action="ajouter"]');
-    if (cible) cible.focus();
-  }
-
-  // Échap ne doit pas fermer le formulaire pendant l'écriture : une erreur serait affichée dans un dialog fermé.
-  dialog.addEventListener('cancel', (e) => {
-    if (occupe) e.preventDefault();
-  });
-
-  dialog.addEventListener('close', () => {
-    const declencheur = enCours && enCours.declencheur;
-    enCours = null;
-    if (declencheur && declencheur.isConnected) declencheur.focus();
-  });
 
   form.addEventListener('change', (e) => {
     if (e.target.name === 'type') majType();
     if (e.target.name === 'moisSuivant') majBornesDate();
   });
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (occupe || !enCours) return;
-    erreurFormulaire.hidden = true;
+    const revenu = panneau.courant();
+    if (panneau.estOccupe() || revenu === undefined) return;
+    panneau.masquerEchec();
     const resultat = validerRevenu({
       nom: champs.nom.value,
       montantTexte: champs.montant.value,
@@ -209,37 +152,18 @@ export async function render(container, params, ctx) {
       moisSuivant: champs.moisSuivant.checked,
       mois,
     });
-    afficherErreurs(resultat.erreurs);
+    panneau.afficherErreurs(resultat.erreurs);
     if (!resultat.ok) return;
-    const { revenu } = enCours;
-    occuper(true);
-    try {
+    panneau.executer(async () => {
       const enregistre = await enregistrerRevenu(resultat.valeurs, { id: revenu ? revenu.id : undefined, moisCourant: mois });
-      occuper(false);
-      await terminer(enregistre.id);
-    } catch (erreur) {
-      console.error(erreur);
-      occuper(false);
-      signalerEchec(ERREUR_ENREGISTREMENT);
-    }
+      return enregistre.id;
+    }, ERREUR_ENREGISTREMENT);
   });
 
-  dialog.querySelector('[data-action="annuler"]').addEventListener('click', () => dialog.close());
-
-  boutonSupprimer.addEventListener('click', async () => {
-    if (occupe || !enCours || !enCours.revenu) return;
-    const { revenu } = enCours;
-    if (!window.confirm(`Supprimer le revenu « ${revenu.nom} » ?`)) return;
-    occuper(true);
-    try {
-      await supprimerRevenu(revenu.id);
-      occuper(false);
-      await terminer(null);
-    } catch (erreur) {
-      console.error(erreur);
-      occuper(false);
-      signalerEchec(ERREUR_SUPPRESSION);
-    }
+  boutonSupprimer.addEventListener('click', () => {
+    const revenu = panneau.courant();
+    if (!revenu) return;
+    panneau.supprimer(`Supprimer le revenu « ${revenu.nom} » ?`, () => supprimerRevenu(revenu.id), ERREUR_SUPPRESSION);
   });
 
   container.querySelector('[data-action="ajouter"]').addEventListener('click', (e) => ouvrir(null, e.currentTarget));
