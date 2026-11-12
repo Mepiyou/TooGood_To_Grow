@@ -68,3 +68,16 @@ Base vide au départ (DevTools › Application › Storage › Clear site data),
 8. **320 px** : liste, total, mention et dialog ouvert tiennent sans défilement horizontal ; boutons ≥ 44 px.
 9. **Non-régression Revenus (panneau commun)** : sur #/mois/revenus, refaire les points 1 (ajout « Bourse »), 3 (modification à 460), 6 (erreurs : focus sur le premier champ en erreur) et 7 (Échap rend le focus au déclencheur) de la checklist « Étape 1 » : comportement identique.
 10. **Formulaire d'une charge avec un changement prévu** : il affiche la valeur à venir (580 €) alors que la ligne affiche la valeur du mois (560 €) — comportement voulu.
+
+### Checklist manuelle « Étape 3 »
+
+Base vide au départ (DevTools › Application › Storage › Clear site data), `npm run build && npm run serve`, ouvrir http://localhost:8081.
+
+1. **Gherkin US4 (partie 1)** : depuis l'accueil, « + Ajouter une dépense » → l'écran « Ajouter une dépense » s'ouvre sans barre du bas, curseur dans « Montant » ; saisir 12, toucher « Courses » (bouton pressé), « Valider » → retour à l'accueil. DevTools › Application › IndexedDB › `toogood` › `depenses` : un enregistrement `montant: 1200`, `categorieId: "courses"`, `date` = date du jour, `mois` = mois en cours, `creeLe` = `modifieLe`.
+2. **Zéro requête** : DevTools › Réseau ouvert (filtre « Tout »), vider la liste puis refaire le point 1 : aucune requête pendant la saisie et la validation.
+3. **« + Nouvelle »** : sur l'écran d'ajout, saisir un montant puis « + Nouvelle » → dialog « Nouvelle catégorie » ; nom « Café », couleur Framboise → « Créer la catégorie » : le dialog se ferme, « Café » apparaît après « Autre » et avant « + Nouvelle », pressé, avec le focus ; le montant saisi est conservé. Recréer « café » → « Cette catégorie existe déjà. ». Échap ou « Annuler » rend le focus à « + Nouvelle ».
+4. **Erreurs** : « Valider » sans rien saisir → « Saisis un montant. » sous le montant, « Choisis une catégorie. » sous les catégories, focus sur le montant ; avec un montant mais sans catégorie → focus sur le premier bouton de catégorie ; date de demain (saisie au clavier) → « La date ne peut pas être dans le futur. ». Un lecteur d'écran lit le message avec le champ.
+5. **Modification** : copier l'`id` d'une dépense dans IndexedDB, ouvrir `#/ajout/<id>` → « Modifier la dépense », montant (« 12 »), catégorie et date pré-remplis ; passer à 9,50 et « Transport » → « Valider » mène à `#/depenses` ; l'enregistrement garde son `creeLe` et a un nouveau `modifieLe`. `#/ajout/inexistant` → « Cette dépense n'existe plus. » et un lien vers les dépenses.
+6. **Double tap** : saisir une dépense et toucher deux fois très vite « Valider » → une seule dépense dans IndexedDB.
+7. **320 px** (mode responsive) : grille de 3 catégories sans défilement horizontal, noms entiers (« Transport ») ; dialog « Nouvelle catégorie » lisible, 6 pastilles ≥ 44 px ; « ← Retour » ramène à l'écran précédent (ou à l'accueil si l'écran a été ouvert directement).
+8. **iPhone 8 (Safari iOS 16)** : le champ montant ouvre le clavier décimal (virgule disponible) ; le champ date ouvre le sélecteur natif ; après une longue période en arrière-plan, rouvrir l'app et saisir une dépense : elle s'enregistre (reconnexion IndexedDB).
