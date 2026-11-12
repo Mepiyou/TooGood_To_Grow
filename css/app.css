@@ -135,6 +135,114 @@ a { color: var(--accent); }
 .bloc-erreur { padding: 16px; border-radius: var(--rayon); }
 .bloc-erreur p { margin: 0 0 12px; }
 
+[hidden] { display: none !important; }
+
+/* Onglets segmentés (Mon mois) */
+.onglets {
+  display: flex;
+  gap: 4px;
+  margin: 16px 0;
+  padding: 4px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+}
+
+.onglet {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px;
+  border-radius: 8px;
+  color: var(--texte-secondaire);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+
+.onglet[aria-current="page"] { background: var(--accent); color: var(--texte-sur-accent); }
+
+.total-mois { font-size: 1.125rem; margin: 0 0 8px; }
+
+/* Listes : une ligne = un bouton qui ouvre la modification */
+.liste-lignes { list-style: none; margin: 0 0 16px; padding: 0; }
+
+.ligne {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--bordure);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ligne:active { background: var(--gris-doux); }
+.ligne-texte { display: flex; flex-direction: column; min-width: 0; }
+.ligne-nom { font-weight: 600; overflow-wrap: anywhere; }
+.ligne-sous-titre { color: var(--texte-secondaire); font-size: 0.875rem; }
+.ligne-montant { font-weight: 600; white-space: nowrap; }
+
+.etat-vide { margin: 16px 0; }
+.bouton-ajout { margin-top: 16px; }
+
+/* Panneau de formulaire (dialog natif) */
+.panneau {
+  width: calc(100% - 16px);
+  max-width: 448px;
+  max-height: calc(100% - 16px);
+  padding: 16px;
+  border: 0;
+  border-radius: var(--rayon);
+  background: var(--fond);
+  color: var(--texte);
+  overflow-y: auto;
+}
+
+.panneau::backdrop { background: rgba(26, 26, 26, 0.5); }
+.panneau h2 { margin: 0 0 16px; }
+
+.champ { margin: 0 0 16px; padding: 0; border: 0; min-width: 0; }
+.champ > label, .champ > legend { display: block; margin-bottom: 4px; padding: 0; font-weight: 600; }
+
+.champ input[type="text"], .champ input[type="number"], .champ input[type="date"] {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--texte-secondaire);
+  border-radius: 8px;
+  background: var(--fond);
+  color: var(--texte);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.champ input[aria-invalid="true"] { border: 2px solid var(--danger); }
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.option input { width: 24px; height: 24px; margin: 0; flex: none; accent-color: var(--accent); }
+
+.erreur-champ, .erreur-formulaire { color: var(--danger); font-size: 0.875rem; margin: 4px 0 0; }
+.erreur-formulaire { margin: 0 0 16px; }
+
+.actions { display: flex; flex-direction: column; gap: 8px; }
+
 @media (min-width: 600px) {
   body { border-inline: 1px solid var(--bordure); min-height: 100vh; }
 }

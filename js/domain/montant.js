@@ -19,3 +19,10 @@ export function parseMontant(texte) {
   if (centimes > PLAFOND_CENTIMES) return refus('Montant invalide.');
   return { ok: true, centimes };
 }
+
+// Valeur de départ du champ montant en modification : « 450 », « 12,50 ».
+export function centimesVersSaisie(centimes) {
+  const euros = Math.trunc(centimes / 100);
+  const reste = centimes % 100;
+  return reste === 0 ? String(euros) : `${euros},${String(reste).padStart(2, '0')}`;
+}

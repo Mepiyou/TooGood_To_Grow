@@ -4,9 +4,13 @@ import { versISO } from './domain/dates.js';
 import { demarrerRouteur } from './router.js';
 import { initBanniereHorsLigne, afficherBanniereMaj } from './ui/banniere.js';
 import { render as renderAccueil } from './views/accueil.js';
+import { render as renderRevenus } from './views/revenus.js';
 
 // Vues des étapes suivantes : le routeur affiche l'accueil tant qu'elles n'existent pas.
-const vues = { accueil: { render: renderAccueil } };
+const vues = {
+  accueil: { render: renderAccueil },
+  revenus: { render: renderRevenus },
+};
 
 const MESSAGE_ERREUR = "Impossible d'ouvrir les données de l'application sur ce téléphone. Si tu es en navigation privée, ouvre l'app dans un onglet normal.";
 

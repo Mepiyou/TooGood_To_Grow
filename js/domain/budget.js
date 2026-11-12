@@ -33,6 +33,18 @@ export function totalRevenusAttendus(revenus, mois) {
   return total;
 }
 
+// Revenus affichés pour `mois` : récurrents (par jour) puis ponctuels (par date).
+// Un ponctuel apparaît dans son mois de réception et, s'il compte pour le mois
+// suivant, aussi dans le mois qu'il finance (pour que la liste explique le total).
+export function revenusDuMois(revenus, mois) {
+  const parNom = (a, b) => a.nom.localeCompare(b.nom, 'fr');
+  const recurrents = revenus.filter((r) => r.recurrent)
+    .sort((a, b) => (a.jour - b.jour) || parNom(a, b));
+  const ponctuels = revenus.filter((r) => !r.recurrent && (moisDe(r.date) === mois || datePourMois(r, mois) !== null))
+    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : parNom(a, b)));
+  return [...recurrents, ...ponctuels];
+}
+
 function dateValide(date) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date ?? ''));
   if (!m) return false;
