@@ -42,18 +42,28 @@ const VERSION = '__VERSION__';
 
 function enregistrerServiceWorker() {
   if (!/^v\d+$/.test(VERSION) || !('serviceWorker' in navigator)) return;
-  // À la première installation, clients.claim() déclenche aussi controllerchange : pas de rechargement alors.
-  const avaitControleur = !!navigator.serviceWorker.controller;
-  let rechargement = false;
+  // controllerchange survient aussi à la première installation (clients.claim()) :
+  // on ne recharge que si l'utilisateur a demandé la mise à jour, et une seule fois.
+  let rechargementDemande = false;
+  let rechargementFait = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!avaitControleur || rechargement) return;
-    rechargement = true;
+    if (!rechargementDemande || rechargementFait) return;
+    rechargementFait = true;
     window.location.reload();
   });
+  // Une seule bannière ; elle active le worker en attente le plus récent.
+  let workerEnAttente = null;
+  let banniereAffichee = false;
   navigator.serviceWorker.register('sw.js').then((inscription) => {
     const signaler = (worker) => {
       if (!navigator.serviceWorker.controller) return;
-      afficherBanniereMaj(() => worker.postMessage('SKIP_WAITING'));
+      workerEnAttente = worker;
+      if (banniereAffichee) return;
+      banniereAffichee = true;
+      afficherBanniereMaj(() => {
+        rechargementDemande = true;
+        workerEnAttente.postMessage('SKIP_WAITING');
+      });
     };
     if (inscription.waiting) signaler(inscription.waiting);
     inscription.addEventListener('updatefound', () => {
