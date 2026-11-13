@@ -17,6 +17,7 @@ import { render as renderHistorique } from './views/historique.js';
 import { render as renderSupprimerMois } from './views/supprimer-mois.js';
 import { render as renderCategories } from './views/categories.js';
 import { render as renderEnveloppes } from './views/enveloppes.js';
+import { render as renderProvisions } from './views/provisions.js';
 
 // Vues des étapes suivantes : le routeur affiche l'accueil tant qu'elles n'existent pas.
 const vues = {
@@ -29,6 +30,7 @@ const vues = {
   'supprimer-mois': { render: renderSupprimerMois },
   categories: { render: renderCategories },
   enveloppes: { render: renderEnveloppes },
+  provisions: { render: renderProvisions },
 };
 
 const MESSAGE_ERREUR = "Impossible d'ouvrir les données de l'application sur ce téléphone. Si tu es en navigation privée, ouvre l'app dans un onglet normal.";
