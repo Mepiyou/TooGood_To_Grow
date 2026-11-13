@@ -150,6 +150,7 @@ export async function render(container, params, ctx) {
   boutonNouvelle.addEventListener('click', () => {
     ouvrirFormCategorie({
       categories,
+      declencheur: boutonNouvelle,
       onEnregistre: (categorie) => {
         if (!grille.isConnected) return;
         categories.push(categorie);
