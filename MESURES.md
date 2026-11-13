@@ -29,7 +29,19 @@ Lighthouse 12.2.1, profil mobile, Chrome Windows sans interface, build v22-9a547
 
 `tools/mesurer.mjs dist` (compte aussi le manifest, les icônes et le précache du service worker) : 8 requêtes, 111,4 Ko brut, 31,1 Ko gzip, 0 URL externe, aucune API réseau dans le bundle.
 
-Version déployée : à remesurer sur GitHub Pages dès que Pages est activé (Settings › Pages › Source : GitHub Actions).
+### Version déployée (https://mepiyou.github.io/TooGood_To_Grow/, compression gzip de GitHub Pages)
+
+| Indicateur | 4G simulée | 3G simulée | Cible |
+|---|---|---|---|
+| Lighthouse performance | 98 | 97 | — |
+| Lighthouse accessibilité | 100 | 100 | ≥ 95 |
+| First Contentful Paint | 1,2 s | 2,1 s | — |
+| Largest Contentful Paint | 1,4 s | 2,2 s | < 2,5 s (4G), < 4 s (3G) |
+| Total Blocking Time | 140 ms | 10 ms | — |
+| Cumulative Layout Shift | 0 | 0 | — |
+| Requêtes (vues par Lighthouse) | 6 | 6 | ≤ 15 |
+| Poids transféré au premier chargement | 36,3 Ko | 36,1 Ko | < 500 Ko (objectif < 150 Ko) |
+| Taille du DOM | 40 éléments | 40 éléments | — |
 
 ## À faire par l'équipe
 
