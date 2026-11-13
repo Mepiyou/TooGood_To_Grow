@@ -104,7 +104,7 @@ export function calculerAccueil({ revenus, charges, depenses, aujourdhui }) {
   const mois = moisDe(aujourdhui);
   const recus = revenusRecus(revenus, aujourdhui);
   const totalCharges = chargesDuMois(charges, mois);
-  const depensesMois = totalDepenses(depenses.filter((d) => d.mois === mois));
+  const depensesMois = totalDepenses(depenses.filter((d) => (d.mois ?? moisDe(d.date)) === mois));
   const reste = resteAVivre({ revenusRecus: recus, charges: totalCharges, depenses: depensesMois });
   const rentree = prochaineRentree(revenus, aujourdhui);
   const jours = joursRestants(aujourdhui, rentree.date);

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CATEGORIES_PAR_DEFAUT, PALETTE, normaliserNom, validerCategorie } from '../js/domain/categories.js';
+import { CATEGORIES_PAR_DEFAUT, PALETTE, normaliserNom, validerCategorie, reaffecterDepenses, reaffecterResumes } from '../js/domain/categories.js';
 
 test('5 catégories par défaut exactes', () => {
   assert.deepEqual(CATEGORIES_PAR_DEFAUT.map(c => [c.id, c.nom, c.couleur]), [
@@ -30,4 +30,25 @@ test('nom de catégorie', () => {
   assert.equal(validerCategorie({ nom: 'Café', couleur: PALETTE[1] }, [...cats, { id: 'c1', nom: 'Café' }], 'c1'), null);
   assert.deepEqual(validerCategorie({ nom: '  ', couleur: PALETTE[0] }, cats), { champ: 'nom', message: 'Le nom est obligatoire.' });
   assert.equal(validerCategorie({ nom: 'Café', couleur: '#000000' }, cats).champ, 'couleur');
+});
+
+test('T11 suppression de catégorie', () => {
+  const deps = [1,2,3,4].map(i => ({ id: 'd'+i, categorieId: 'cafe', montant: 300, date: '2026-11-0'+i })).concat({ id: 'x', categorieId: 'courses', montant: 100, date: '2026-11-01' });
+  const copie = JSON.parse(JSON.stringify(deps));
+  const r = reaffecterDepenses(deps, 'cafe', 'X');
+  assert.equal(r.length, 4); assert.ok(r.every(d => d.categorieId === 'autre' && d.modifieLe === 'X'));
+  assert.deepEqual(deps, copie);
+});
+
+test('résumés réaffectés', () => {
+  const entree = [{ mois: '2026-10', parCategorie: { cafe: 1200, autre: 300 } }];
+  const [r] = reaffecterResumes(entree, 'cafe');
+  assert.deepEqual(r.parCategorie, { autre: 1500 });
+  assert.deepEqual(entree[0].parCategorie, { cafe: 1200, autre: 300 });
+});
+
+test('résumés : autre créé, résumé sans la catégorie ignoré', () => {
+  const r = reaffecterResumes([{ mois: '2026-10', parCategorie: { cafe: 500 } }, { mois: '2026-09', parCategorie: { courses: 900 } }], 'cafe');
+  assert.equal(r.length, 1);
+  assert.deepEqual(r[0].parCategorie, { autre: 500 });
 });

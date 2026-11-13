@@ -37,3 +37,22 @@ export function categorieDeRepli(categorieId, categories) {
 export function prochainOrdre(categories) {
   return categories.reduce((max, c) => Math.max(max, c.ordre + 1), 0);
 }
+
+// Suppression d'une catégorie : ne renvoie que les dépenses à réécrire.
+export function reaffecterDepenses(depenses, categorieId, maintenant) {
+  return depenses
+    .filter((d) => d.categorieId === categorieId)
+    .map((d) => ({ ...d, categorieId: 'autre', modifieLe: maintenant }));
+}
+
+// Le montant de la catégorie supprimée passe dans `autre` ; seuls les résumés concernés sont renvoyés.
+export function reaffecterResumes(resumes, categorieId) {
+  return resumes
+    .filter((r) => r.parCategorie && categorieId in r.parCategorie)
+    .map((r) => {
+      const parCategorie = { ...r.parCategorie };
+      parCategorie.autre = (parCategorie.autre ?? 0) + parCategorie[categorieId];
+      delete parCategorie[categorieId];
+      return { ...r, parCategorie };
+    });
+}
