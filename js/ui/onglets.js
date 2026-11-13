@@ -1,7 +1,8 @@
-// Onglets segmentés de « Mon mois ». « Provisions » est masqué en V1 (D14).
+// Onglets segmentés de « Mon mois ». « Provisions », masqué en V1 (D14), est visible depuis l'étape 7.
 const ONGLETS_MOIS = [
   { id: 'revenus', libelle: 'Revenus', href: '#/mois/revenus' },
   { id: 'charges', libelle: 'Charges fixes', href: '#/mois/charges' },
+  { id: 'provisions', libelle: 'Provisions', href: '#/mois/provisions' },
 ];
 
 export function rendreOngletsMois(actif) {

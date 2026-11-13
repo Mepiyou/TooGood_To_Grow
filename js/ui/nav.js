@@ -2,13 +2,15 @@ const ICONES = {
   accueil: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
   depenses: '<path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/>',
   mois: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/>',
+  enveloppes: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
 };
 
-// « Enveloppes » est masqué en V1 (D14).
+// « Enveloppes », masqué en V1 (D14), est visible depuis l'étape 7.
 const ONGLETS = [
   { id: 'accueil', libelle: 'Accueil', href: '#/' },
   { id: 'depenses', libelle: 'Dépenses', href: '#/depenses' },
   { id: 'mois', libelle: 'Mon mois', href: '#/mois/revenus' },
+  { id: 'enveloppes', libelle: 'Enveloppes', href: '#/enveloppes' },
 ];
 
 function icone(id) {

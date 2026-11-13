@@ -10,12 +10,13 @@ test('routes', () => {
   assert.equal(resoudreRoute('#/historique').onglet, 'depenses');
   assert.equal(resoudreRoute('#/mois/charges').onglet, 'mois');
   assert.equal(resoudreRoute('#/inconnue').nom, 'accueil');
-  assert.equal(resoudreRoute('#/enveloppes').nom, 'accueil'); // V2 masquée (D14)
+  assert.equal(resoudreRoute('#/enveloppes').nom, 'enveloppes'); // V2 activée (étape 7)
 });
 
 test('forme exacte et V2', () => {
   assert.deepEqual(resoudreRoute('#/'), { nom: 'accueil', params: {}, onglet: 'accueil', bouton: true });
-  assert.deepEqual(resoudreRoute('#/mois/provisions'), resoudreRoute('#/'));
+  assert.deepEqual(resoudreRoute('#/mois/provisions'), { nom: 'provisions', params: {}, onglet: 'mois', bouton: true });
+  assert.deepEqual(resoudreRoute('#/enveloppes'), { nom: 'enveloppes', params: {}, onglet: 'enveloppes', bouton: true });
   assert.equal(ROUTES.filter((r) => r.v2).length, 2);
   assert.equal(resoudreRoute('#/categories').onglet, null);
 });
@@ -27,7 +28,8 @@ test('titre du document par route', () => {
   assert.equal(titreDocument('#/ajout'), 'Ajouter une dépense · TooGood To Grow');
   assert.equal(titreDocument('#/ajout/abc'), 'Modifier la dépense · TooGood To Grow');
   assert.equal(titreDocument('#/historique/supprimer/2026-10'), 'Supprimer un mois · TooGood To Grow');
-  assert.equal(titreDocument('#/enveloppes'), 'TooGood To Grow'); // V2 masquée : titre de l'accueil
+  assert.equal(titreDocument('#/enveloppes'), 'Enveloppes · TooGood To Grow');
+  assert.equal(titreDocument('#/mois/provisions'), 'Mon mois – Provisions · TooGood To Grow');
   assert.ok(ROUTES.every((r) => typeof r.titre === 'string' && r.titre !== ''));
 });
 
