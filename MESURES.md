@@ -7,9 +7,29 @@
 | 2. Charges fixes (US3) | 2026-11-12 | 8 | 66,8 | 19,9 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US3 charges, panneau de formulaire commun. `node tools/mesurer.mjs dist` (build v11-8f275940) : 0 URL externe, budget respecté |
 | 3. Dépenses (US4) | 2026-11-12 | 8 | 96,9 | 27,2 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US4 saisie, modification, suppression, liste du mois. `node tools/mesurer.mjs dist` (build v15-01312683) : 0 URL externe, budget respecté |
 | 4. Accueil (US2) | 2026-11-13 | 8 | 106,4 | 29,5 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US2 solde quotidien, reste à vivre, dernières dépenses ; rafraîchissement au retour après un changement de date (focus fenêtre, formulaire ouvert préservé) ; libellés D29 (fin du mois aujourd'hui) et D30 (début de mois sans dépense). `node tools/mesurer.mjs dist` (build v19-659df82c) : 0 URL externe, budget respecté |
-| 5. Hors ligne (US9) | 2026-11-13 | 8 | 111,3 | 31,1 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US9 persistance du stockage, encart d'installation iOS (Safari seulement), persistance redemandée une fois installée, bandeau hors ligne annoncé, zone sûre en bas d'écran. `node tools/mesurer.mjs dist` (build v21-45f7c168) : 0 URL externe, aucune API réseau dans js/app.js, budget respecté |
+| 5. Hors ligne (US9) | 2026-11-13 | 8 | 111,4 | 31,1 | 1,8 s / 3,5 s (Lighthouse local) | 100 (Lighthouse local) | à vérifier par l'équipe | US9 persistance du stockage, encart d'installation iOS (Safari seulement), persistance redemandée une fois installée, bandeau hors ligne annoncé, zone sûre en bas d'écran. `node tools/mesurer.mjs dist` (build v21-45f7c168) : 0 URL externe, aucune API réseau dans js/app.js, budget respecté |
 
 Limite de l'outil : les requêtes d'installation du service worker (précache) ne sont pas comptées en plus du premier chargement.
+
+## Mesures Lighthouse après l'étape 5 (2026-11-13)
+
+Lighthouse 12.2.1, profil mobile, Chrome Windows sans interface, build v22-9a547c94 servi en local par `python3 -m http.server` (**sans compression** : le poids transféré mesuré est le poids brut ; sur un hébergeur qui compresse, comme GitHub Pages, il tombe à ~31 Ko gzip et les temps baissent). Page mesurée : accueil, base vide (premier lancement).
+
+| Indicateur | 4G simulée (défaut Lighthouse : RTT 150 ms, 1,6 Mbit/s, CPU ×4) | 3G simulée (RTT 300 ms, 700 kbit/s, CPU ×4) | Cible |
+|---|---|---|---|
+| Lighthouse performance | 99 | 84 | — |
+| Lighthouse accessibilité | 100 | 100 | ≥ 95 |
+| First Contentful Paint | 1,6 s | 3,2 s | — |
+| Largest Contentful Paint | 1,8 s | 3,5 s | < 2,5 s (4G), < 4 s (3G) |
+| Total Blocking Time | 30 ms | 30 ms | — |
+| Cumulative Layout Shift | 0 | 0 | — |
+| Requêtes (vues par Lighthouse) | 6 | 6 | ≤ 15 |
+| Poids transféré (sans compression) | 106,7 Ko | 106,7 Ko | < 500 Ko |
+| Taille du DOM | 40 éléments | 40 éléments | — |
+
+`tools/mesurer.mjs dist` (compte aussi le manifest, les icônes et le précache du service worker) : 8 requêtes, 111,4 Ko brut, 31,1 Ko gzip, 0 URL externe, aucune API réseau dans le bundle.
+
+Version déployée : à remesurer sur GitHub Pages dès que Pages est activé (Settings › Pages › Source : GitHub Actions).
 
 ## À faire par l'équipe
 
