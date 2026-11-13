@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { calculerAccueil } from '../js/domain/budget.js';
+import { formatMontant } from '../js/ui/format.js';
 import { ligneResteAVivre, texteAvertissement, estPremierLancement } from '../js/ui/textes-accueil.js';
 
 const espaces = (s) => s.replace(/[\u00a0\u202f]/g, ' ');
@@ -54,6 +55,43 @@ test('cas négatif de bout en bout : 0 €/jour et avertissement', () => {
   const accueil = calculerAccueil({ revenus, charges, depenses: grosse, aujourdhui: '2026-11-10' });
   assert.equal(accueil.soldeQuotidien, 0);
   assert.equal(espaces(texteAvertissement(accueil)), "Tu as dépassé ton budget de 20 €. Pas de panique : limite tes dépenses jusqu'au 25.");
+});
+
+test('D29 : dernier jour du mois sans rentrée prévue, « fin du mois aujourd\'hui »', () => {
+  const ligne = ligneResteAVivre({ resteAVivre: 18500, prochaineRentree: { date: '2026-11-30', revenu: null }, joursRestants: 1, aujourdhui: '2026-11-30' });
+  assert.equal(espaces(ligne), "Reste à vivre : 185 € · fin du mois aujourd'hui");
+  const veille = ligneResteAVivre({ resteAVivre: 18500, prochaineRentree: { date: '2026-11-30', revenu: null }, joursRestants: 1, aujourdhui: '2026-11-29' });
+  assert.equal(espaces(veille), 'Reste à vivre : 185 € · fin du mois dans 1 jour');
+});
+
+test('D29 de bout en bout : dernier jour du mois, le calcul garde 1 jour minimum', () => {
+  const sansJob = [revenus[0], revenus[1]];
+  const accueil = calculerAccueil({ revenus: sansJob, charges, depenses, aujourdhui: '2026-11-30' });
+  assert.equal(accueil.joursRestants, 1);
+  assert.equal(espaces(ligneResteAVivre({ ...accueil, aujourdhui: '2026-11-30' })), `Reste à vivre : ${espaces(formatMontant(accueil.resteAVivre))} · fin du mois aujourd'hui`);
+});
+
+test('D30 : négatif, aucune dépense, rentrée prévue le 5', () => {
+  const rentree = { date: '2026-11-05', revenu: { nom: 'Bourse' } };
+  assert.equal(texteAvertissement({ resteAVivre: -2000, depensesMois: 0, prochaineRentree: rentree }),
+    "Ta prochaine rentrée arrive le 5 : limite tes dépenses d'ici là.");
+});
+
+test('D30 : négatif avec dépenses, texte D18', () => {
+  const rentree = { date: '2026-11-05', revenu: { nom: 'Bourse' } };
+  assert.equal(espaces(texteAvertissement({ resteAVivre: -2000, depensesMois: 500, prochaineRentree: rentree })),
+    "Tu as dépassé ton budget de 20 €. Pas de panique : limite tes dépenses jusqu'au 5.");
+});
+
+test('D30 : négatif, aucune dépense, aucune rentrée prévue, texte D18', () => {
+  assert.equal(espaces(texteAvertissement({ resteAVivre: -2000, depensesMois: 0, prochaineRentree: { date: '2026-11-30', revenu: null } })),
+    "Tu as dépassé ton budget de 20 €. Pas de panique : limite tes dépenses jusqu'au 30.");
+});
+
+test('D30 : 0 € ou positif, aucun avertissement même sans dépense', () => {
+  const rentree = { date: '2026-11-05', revenu: { nom: 'Bourse' } };
+  assert.equal(texteAvertissement({ resteAVivre: 0, depensesMois: 0, prochaineRentree: rentree }), null);
+  assert.equal(texteAvertissement({ resteAVivre: 500, depensesMois: 0, prochaineRentree: rentree }), null);
 });
 
 test('premier lancement : aucun revenu saisi', () => {

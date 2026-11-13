@@ -21,13 +21,13 @@ function rendreInvitation() {
 
 // Texte visible masqué aux lecteurs d'écran, remplacé par un texte masqué visuellement (« 12 euros par jour ») :
 // « 12 €/jour » serait lu « barre jour ». La coupure n'est permise qu'entre le montant et « /jour ».
-function rendreCarte(accueil) {
+function rendreCarte(accueil, aujourdhui) {
   const solde = formatSoldeQuotidien(accueil.soldeQuotidien);
   const avertissement = texteAvertissement(accueil);
   return `<section class="carte-accueil" aria-labelledby="titre-carte">
     <h2 id="titre-carte" class="carte-titre">Tu peux dépenser</h2>
     <p class="solde-quotidien"><span aria-hidden="true">${echapper(formatMontant(accueil.soldeQuotidien))}<wbr><span class="solde-unite">/jour</span></span><span class="visuellement-masque">${echapper(solde.lu)}</span></p>
-    <p class="reste-a-vivre">${echapper(ligneResteAVivre(accueil))}</p>
+    <p class="reste-a-vivre">${echapper(ligneResteAVivre({ ...accueil, aujourdhui }))}</p>
     ${avertissement ? `<p class="avertissement-budget">${echapper(avertissement)}</p>` : ''}
   </section>`;
 }
@@ -71,7 +71,7 @@ export async function render(container, params, ctx) {
   const dernieres = trierParDateDesc(depenses).slice(0, NB_DERNIERES);
   const carte = estPremierLancement(revenus)
     ? rendreInvitation()
-    : rendreCarte(calculerAccueil({ revenus, charges, depenses, aujourdhui }));
+    : rendreCarte(calculerAccueil({ revenus, charges, depenses, aujourdhui }), aujourdhui);
 
   container.innerHTML = `<div class="vue-accueil">
     <h1>TooGood To Grow</h1>
