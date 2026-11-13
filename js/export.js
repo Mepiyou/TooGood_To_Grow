@@ -62,7 +62,17 @@ export async function importerFichier(fichier, aujourdhui) {
     tx.objectStore('meta').delete('derniereCloture');
   });
   // Un fichier sans « Autre » laisserait l'app sans catégorie de repli : on re-sème les catégories par défaut.
-  await initialiserCategories();
-  await cloturerMoisPasses(moisDe(aujourdhui));
+  // Les données sont déjà remplacées : un échec ici ne doit pas faire croire à un import raté.
+  // Les deux étapes sont rejouées à chaque démarrage.
+  try {
+    await initialiserCategories();
+  } catch (erreur) {
+    console.error(erreur);
+  }
+  try {
+    await cloturerMoisPasses(moisDe(aujourdhui));
+  } catch (erreur) {
+    console.error(erreur);
+  }
   return { ok: true };
 }
