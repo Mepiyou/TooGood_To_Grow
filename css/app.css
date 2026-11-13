@@ -527,14 +527,16 @@ body.sans-nav #zone-actions { padding-bottom: calc(8px + env(safe-area-inset-bot
 .titre-section { font-size: 1rem; margin: 16px 0 8px; }
 
 .barres { position: relative; margin: 0 0 16px; }
-.barres-liste { display: flex; align-items: stretch; gap: 4px; list-style: none; margin: 0; padding: 0; }
+/* Colonnes jointives (pas de gap) : les bordures d'axe se rejoignent en une seule ligne ;
+   l'espace de 4 px entre colonnes est porté par les marges des barres et le retrait des libellés. */
+.barres-liste { display: flex; align-items: stretch; gap: 0; list-style: none; margin: 0; padding: 0; }
 .barre-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; }
-.barre-valeur { font-size: 0.75rem; line-height: 1.2; min-height: 1.2em; margin-bottom: 4px; color: var(--texte); text-align: center; overflow-wrap: anywhere; }
+.barre-valeur { font-size: 0.75rem; line-height: 1.2; min-height: 1.2em; margin-bottom: 4px; padding: 0 2px; color: var(--texte); text-align: center; overflow-wrap: anywhere; }
 .barre-zone { box-sizing: content-box; display: flex; align-items: flex-end; width: 100%; height: 120px; }
-.barre { display: block; width: 100%; background: var(--texte-secondaire); border-radius: 4px 4px 0 0; }
+.barre { display: block; flex: 1; min-width: 0; margin: 0 2px; background: var(--texte-secondaire); border-radius: 4px 4px 0 0; }
 .barre-courante .barre { background: var(--accent); }
 .barre-courante .barre-valeur, .barre-courante .barre-mois { font-weight: 700; color: var(--accent); }
-.barre-mois { font-size: 0.75rem; margin-top: 4px; color: var(--texte-secondaire); }
+.barre-mois { font-size: 0.75rem; margin-top: 4px; padding: 0 2px; color: var(--texte-secondaire); }
 .barres-axe { border-bottom: 1px solid var(--texte); }
 
 .bandeau-stockage { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; background: var(--gris-doux); border-radius: var(--rayon); }
