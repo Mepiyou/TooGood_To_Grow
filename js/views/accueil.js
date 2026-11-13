@@ -9,6 +9,8 @@ import { listerRevenus } from '../store/revenus.js';
 import { listerCharges } from '../store/charges.js';
 import { depensesDuMois } from '../store/depenses.js';
 import { listerCategories } from '../store/categories.js';
+import { listerEnveloppes } from '../store/enveloppes.js';
+import { listerProvisions } from '../store/provisions.js';
 
 const NB_DERNIERES = 3;
 
@@ -62,8 +64,8 @@ function rendreDernieres(dernieres, categories) {
 export async function render(container, params, ctx) {
   const aujourdhui = ctx.aujourdhui();
   const mois = moisDe(aujourdhui);
-  const [revenus, charges, depenses, categories] = await Promise.all([
-    listerRevenus(), listerCharges(), depensesDuMois(mois), listerCategories(),
+  const [revenus, charges, depenses, categories, enveloppes, provisions] = await Promise.all([
+    listerRevenus(), listerCharges(), depensesDuMois(mois), listerCategories(), listerEnveloppes(), listerProvisions(),
   ]);
   if (!ctx.estActuel()) return;
 
@@ -71,7 +73,7 @@ export async function render(container, params, ctx) {
   const dernieres = trierParDateDesc(depenses).slice(0, NB_DERNIERES);
   const carte = estPremierLancement(revenus)
     ? rendreInvitation()
-    : rendreCarte(calculerAccueil({ revenus, charges, depenses, aujourdhui }), aujourdhui);
+    : rendreCarte(calculerAccueil({ revenus, charges, depenses, aujourdhui, enveloppes, provisions }), aujourdhui);
 
   container.innerHTML = `<div class="vue-accueil">
     <h1>TooGood To Grow</h1>

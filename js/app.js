@@ -1,12 +1,13 @@
 import { ouvrirDB } from './db.js';
 import { initialiserCategories } from './store/categories.js';
 import { versISO, moisDe } from './domain/dates.js';
-import { demarrerRouteur } from './router.js';
+import { demarrerRouteur, resoudreRoute } from './router.js';
 import { initBanniereHorsLigne, afficherBanniereMaj } from './ui/banniere.js';
 import { afficherEncartIOS } from './ui/encart-ios.js';
 import { doitDemanderPersistance } from './domain/persistance.js';
 import { lireMeta, ecrireMeta } from './store/meta.js';
-import { cloturerMoisPasses } from './store/resumes.js';
+import { cloturerMoisPasses, recalculerResumes } from './store/resumes.js';
+import { solderProvisionsEchues } from './store/provisions.js';
 import { render as renderAccueil } from './views/accueil.js';
 import { render as renderRevenus } from './views/revenus.js';
 import { render as renderCharges } from './views/charges.js';
@@ -50,8 +51,25 @@ async function demarrer() {
   routeur = demarrerRouteur(document.getElementById('app'), vues, ctx);
   // Après le premier rendu, sans attendre : ni la persistance ni l'encart ne retardent l'affichage.
   demanderPersistance().catch((erreur) => console.error(erreur));
-  cloturerMoisPasses(moisDe(ctx.aujourdhui())).catch((erreur) => console.error(erreur));
+  solderPuisCloturer(moisDe(ctx.aujourdhui()), ctx).catch((erreur) => console.error(erreur));
   afficherEncartIOS(ctx).catch((erreur) => console.error(erreur));
+}
+
+// D44 puis D40 : les provisions échues sont soldées avant la clôture, pour qu'une dépense de solde datée
+// d'un mois passé entre dans son résumé (recalculé s'il était déjà clôturé). Si l'accueil est affiché,
+// il est redessiné avec la dépense de solde.
+async function solderPuisCloturer(moisCourant, ctx) {
+  let soldees = [];
+  try {
+    soldees = await solderProvisionsEchues(moisCourant, new Date().toISOString());
+  } catch (erreur) {
+    console.error(erreur);
+  }
+  await cloturerMoisPasses(moisCourant);
+  if (soldees.length === 0) return;
+  const moisPasses = [...new Set(soldees.map((d) => d.mois).filter((m) => m < moisCourant))];
+  if (moisPasses.length > 0) await recalculerResumes(moisPasses);
+  if (resoudreRoute(window.location.hash).nom === 'accueil') ctx.rafraichir();
 }
 
 // Un refus ou une erreur n'a aucune conséquence visible ; la demande est retentée une fois installée.
