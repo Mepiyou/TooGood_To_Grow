@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { construireExport, nomFichierExport, validerImport } from '../js/domain/import.js';
+import { construireExport, nomFichierExport, validerImport, ligneAImporter } from '../js/domain/import.js';
+import { texteConfirmationImport } from '../js/export.js';
 
 const vide = { revenus: [], charges: [], depenses: [], categories: [], resumes: [], enveloppes: [], provisions: [] };
 const PAS_UNE_SAUVEGARDE = "Ce fichier n'est pas une sauvegarde TooGood To Grow.";
@@ -66,4 +67,22 @@ test('export : 7 tableaux toujours présents', () => {
   assert.deepEqual(Object.keys(e.donnees), ['revenus', 'charges', 'depenses', 'categories', 'resumes', 'enveloppes', 'provisions']);
   assert.deepEqual(e.donnees.depenses, [{ id: 'a' }]); assert.deepEqual(e.donnees.revenus, []);
   assert.equal(e.perimetre, '2026-10');
+});
+
+test('confirmation d’import : spécifique pour un fichier mensuel', () => {
+  const generique = 'Remplacer toutes tes données par celles du fichier ?';
+  assert.equal(texteConfirmationImport('tout'), generique);
+  assert.equal(texteConfirmationImport(undefined), generique);
+  assert.equal(texteConfirmationImport('2026-10'), "Ce fichier ne contient que les dépenses d'octobre 2026. Remplacer toutes tes données par celles-ci ?");
+  assert.equal(texteConfirmationImport('2026-11'), 'Ce fichier ne contient que les dépenses de novembre 2026. Remplacer toutes tes données par celles-ci ?');
+  // Périmètre illisible : texte générique plutôt qu'un mois inventé.
+  assert.equal(texteConfirmationImport('2026-13'), generique);
+});
+
+test('import : le mois d’une dépense est toujours recalculé depuis sa date', () => {
+  const d = { id: 'a', montant: 100, date: '2026-10-31', mois: '2026-09', categorieId: 'autre' };
+  assert.deepEqual(ligneAImporter('depenses', d), { ...d, mois: '2026-10' });
+  assert.equal(ligneAImporter('depenses', { ...d, mois: undefined }).mois, '2026-10');
+  const r = { id: 'r', montant: 100 };
+  assert.equal(ligneAImporter('revenus', r), r);
 });

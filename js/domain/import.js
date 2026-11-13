@@ -1,4 +1,4 @@
-import { dateValide } from './dates.js';
+import { dateValide, moisDe } from './dates.js';
 
 const CHAMPS = ['revenus', 'charges', 'depenses', 'categories', 'resumes', 'enveloppes', 'provisions'];
 const ERR_APP = "Ce fichier n'est pas une sauvegarde TooGood To Grow.";
@@ -11,6 +11,11 @@ export function construireExport(donnees, { maintenant, perimetre = 'tout' }) {
   const complet = {};
   for (const champ of CHAMPS) complet[champ] = donnees?.[champ] ?? [];
   return { app: 'toogood', schemaVersion: 1, exporteLe: maintenant, perimetre, donnees: complet };
+}
+
+// Le `mois` d'une dépense est un index dérivé : on ne fait pas confiance à celui du fichier.
+export function ligneAImporter(nom, ligne) {
+  return nom === 'depenses' ? { ...ligne, mois: moisDe(ligne.date) } : ligne;
 }
 
 export function nomFichierExport(aujourdhui, mois) {

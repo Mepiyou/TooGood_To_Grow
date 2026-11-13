@@ -58,6 +58,11 @@ export function formatNomMois(mois) {
   return fmtNomMois.format(dateUTC(`${mois}-01`));
 }
 
+// « d'octobre 2026 » devant une voyelle, « de novembre 2026 » sinon.
+export function elisionDe(texte) {
+  return /^[aeiouyéèh]/i.test(texte) ? `d'${texte}` : `de ${texte}`;
+}
+
 export function majuscule(texte) {
   return texte.charAt(0).toUpperCase() + texte.slice(1);
 }

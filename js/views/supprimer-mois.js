@@ -1,5 +1,5 @@
 import { echapper } from '../ui/dom.js';
-import { formatMois, formatNomMois, formatMontant, formatTaille, majuscule } from '../ui/format.js';
+import { formatMois, formatNomMois, formatMontant, formatTaille, majuscule, elisionDe } from '../ui/format.js';
 import { deposerMessage } from '../ui/message-flash.js';
 import { moisDe, moisAChange } from '../domain/dates.js';
 import { moisSupprimable } from '../domain/resume.js';
@@ -23,8 +23,7 @@ export function libelleRecap({ nbDepenses, total, taille, detailSupprime }) {
 
 // « d'octobre » devant une voyelle, « de novembre » sinon.
 function deMois(mois) {
-  const nom = formatNomMois(mois);
-  return /^[aeiouyéèh]/i.test(nom) ? `d'${nom}` : `de ${nom}`;
+  return elisionDe(formatNomMois(mois));
 }
 
 function rendreRefus(container) {

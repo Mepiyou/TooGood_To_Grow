@@ -1,11 +1,19 @@
 import { lireTout, transaction } from './db.js';
-import { construireExport, nomFichierExport, validerImport } from './domain/import.js';
+import { construireExport, nomFichierExport, validerImport, ligneAImporter } from './domain/import.js';
 import { moisDe } from './domain/dates.js';
+import { formatMois, elisionDe } from './ui/format.js';
 import { initialiserCategories } from './store/categories.js';
 import { cloturerMoisPasses } from './store/resumes.js';
 
 const STORES = ['revenus', 'charges', 'depenses', 'categories', 'resumes', 'enveloppes', 'provisions'];
 const CONFIRMATION = 'Remplacer toutes tes données par celles du fichier ?';
+
+// Un fichier mensuel remplace aussi toutes les données (pas de fusion, § 8.3) : on le dit clairement.
+export function texteConfirmationImport(perimetre) {
+  const estMois = typeof perimetre === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(perimetre);
+  if (!estMois) return CONFIRMATION;
+  return `Ce fichier ne contient que les dépenses ${elisionDe(formatMois(perimetre))}. Remplacer toutes tes données par celles-ci ?`;
+}
 
 async function lireDonnees() {
   const listes = await Promise.all(STORES.map((s) => lireTout(s)));
@@ -48,16 +56,14 @@ export async function importerFichier(fichier, aujourdhui) {
   }
   const validation = validerImport(objet);
   if (!validation.ok) return validation;
-  if (!window.confirm(CONFIRMATION)) return { ok: false, annule: true };
+  if (!window.confirm(texteConfirmationImport(objet.perimetre))) return { ok: false, annule: true };
 
   const { donnees } = validation;
   await transaction([...STORES, 'meta'], 'readwrite', (tx) => {
     for (const nom of STORES) {
       const store = tx.objectStore(nom);
       store.clear();
-      for (const ligne of donnees[nom]) {
-        store.put(nom === 'depenses' ? { ...ligne, mois: ligne.mois ?? moisDe(ligne.date) } : ligne);
-      }
+      for (const ligne of donnees[nom]) store.put(ligneAImporter(nom, ligne));
     }
     tx.objectStore('meta').delete('derniereCloture');
   });
