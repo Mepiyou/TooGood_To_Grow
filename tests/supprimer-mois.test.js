@@ -17,7 +17,7 @@ test('moisSupprimable : AAAA-MM réel et strictement passé', () => {
 
 test('messageSuppression : majuscule au mois, taille libérée', () => {
   assert.equal(espaces(messageSuppression('2026-10', 4096)), 'Octobre 2026 supprimé — 4 Ko libérés');
-  assert.equal(espaces(messageSuppression('2026-10', 0)), 'Octobre 2026 supprimé — 1 Ko libérés');
+  assert.equal(espaces(messageSuppression('2026-10', 0)), 'Octobre 2026 supprimé');
 });
 
 test('libelleRecap : détail présent ou déjà supprimé', () => {

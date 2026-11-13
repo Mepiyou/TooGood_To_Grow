@@ -12,12 +12,19 @@ const ERREUR_SUPPRESSION = 'Impossible de supprimer ce mois. Réessaie.';
 const ERREUR_EXPORT = "Impossible d'exporter ce mois. Réessaie.";
 
 export function messageSuppression(mois, taille) {
-  return `${majuscule(formatMois(mois))} supprimé — ${formatTaille(taille)} libérés`;
+  const base = `${majuscule(formatMois(mois))} supprimé`;
+  return taille > 0 ? `${base} — ${formatTaille(taille)} libérés` : base;
 }
 
 export function libelleRecap({ nbDepenses, total, taille, detailSupprime }) {
   if (detailSupprime) return `Détail déjà supprimé · ${formatMontant(total)}`;
   return `${nbDepenses} ${nbDepenses > 1 ? 'dépenses' : 'dépense'} · ${formatMontant(total)} · environ ${formatTaille(taille)}`;
+}
+
+// « d'octobre » devant une voyelle, « de novembre » sinon.
+function deMois(mois) {
+  const nom = formatNomMois(mois);
+  return /^[aeiouyéèh]/i.test(nom) ? `d'${nom}` : `de ${nom}`;
 }
 
 function rendreRefus(container) {
@@ -49,19 +56,22 @@ export async function render(container, params, ctx) {
     detailSupprime: depenses.length === 0,
   };
   const nom = formatMois(mois);
+  const annee = mois.slice(0, 4);
 
   container.innerHTML = `<div class="vue-supprimer-mois">
     <h1>Supprimer ${echapper(nom)}</h1>
     <p class="recap-mois">${echapper(libelleRecap(recap))}</p>
     <p class="avertissement-suppression">La suppression est définitive.</p>
-    <div class="champ-case">
+    ${recap.detailSupprime
+    ? `<p class="secondaire">Les totaux ${deMois(mois)} disparaîtront des graphiques.</p>`
+    : `<div class="champ-case">
       <input type="checkbox" id="garder-totaux" checked aria-describedby="aide-garder-totaux">
       <label for="garder-totaux">Garder les totaux du mois</label>
-      <p id="aide-garder-totaux" class="secondaire aide-case">Les graphiques garderont le total d'${echapper(formatNomMois(mois))}.</p>
-    </div>
+      <p id="aide-garder-totaux" class="secondaire aide-case">Les graphiques garderont le total ${deMois(mois)}.</p>
+    </div>`}
     <p class="erreur-formulaire" role="alert" hidden></p>
     <button type="button" class="bouton bouton-lien" data-action="exporter">Exporter ce mois avant</button>
-    <button type="button" class="bouton bouton-danger" data-action="supprimer">Supprimer ${echapper(nom)}</button>
+    <button type="button" class="bouton bouton-danger" data-action="supprimer">${recap.detailSupprime ? `Supprimer les totaux ${deMois(mois)} ${annee}` : `Supprimer ${echapper(nom)}`}</button>
     <a class="bouton" href="#/historique">Annuler</a>
   </div>`;
 
@@ -90,7 +100,7 @@ export async function render(container, params, ctx) {
     }
     try {
       const taille = await supprimerMois({
-        mois, moisCourant, garderTotaux: caseTotaux.checked, maintenant: new Date().toISOString(),
+        mois, moisCourant, garderTotaux: caseTotaux ? caseTotaux.checked : false, maintenant: new Date().toISOString(),
       });
       deposerMessage(messageSuppression(mois, taille));
       ctx.naviguer('#/historique');
