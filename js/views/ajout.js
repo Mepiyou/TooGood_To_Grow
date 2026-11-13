@@ -89,9 +89,9 @@ export async function render(container, params, ctx) {
         ${erreurChamp('date')}
       </div>
       <p class="erreur-formulaire" role="alert" hidden></p>
+      <p class="avertissement-plaisir" role="status"></p>
       <button type="submit" class="bouton bouton-principal">Valider</button>
     </form>
-    <p class="avertissement-plaisir" role="status"></p>
   </div>`;
 
   const form = container.querySelector('form');
