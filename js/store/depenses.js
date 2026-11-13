@@ -1,11 +1,15 @@
-import { lire, ecrire, supprimer, parIndex } from '../db.js';
-import { construireDepense } from '../domain/depenses.js';
+import { lire, lireTout, ecrire, supprimer, parIndex } from '../db.js';
+import { construireDepense, statsParMois as calculerStats } from '../domain/depenses.js';
 import { moisDe, versISO } from '../domain/dates.js';
 import { moisImpactes } from '../domain/resume.js';
 import { recalculerResumes } from './resumes.js';
 
 export function depensesDuMois(mois) {
   return parIndex('depenses', 'mois', mois);
+}
+
+export async function statsParMois() {
+  return calculerStats(await lireTout('depenses'));
 }
 
 export function lireDepense(id) {

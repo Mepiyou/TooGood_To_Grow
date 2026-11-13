@@ -56,3 +56,14 @@ export function groupesParJour(depenses) {
   }
   return groupes;
 }
+
+// Taille approximative d'un mois = longueur du JSON de ses dépenses (pas d'octets exacts sur disque).
+export function statsParMois(depenses) {
+  const parMois = new Map();
+  for (const d of depenses) {
+    const m = d.mois ?? moisDe(d.date);
+    if (!parMois.has(m)) parMois.set(m, []);
+    parMois.get(m).push(d);
+  }
+  return [...parMois].map(([mois, liste]) => ({ mois, nbDepenses: liste.length, taille: JSON.stringify(liste).length }));
+}

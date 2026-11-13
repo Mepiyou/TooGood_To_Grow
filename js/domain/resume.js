@@ -95,3 +95,18 @@ export function totauxSixMois(resumes, moisCourant, totalCourant) {
     ? { mois: mm, total: totalCourant, courant: true }
     : { mois: mm, total: parMois.has(mm) ? parMois.get(mm) : null, courant: false }));
 }
+
+// Un mois apparaît s'il a des dépenses ou un résumé ; seuls les mois passés sont supprimables.
+export function lignesHistorique(stats, resumes, moisCourant) {
+  const parMois = new Map();
+  for (const s of stats) parMois.set(s.mois, { nbDepenses: s.nbDepenses, taille: s.taille });
+  const detailSupprime = new Map(resumes.map((r) => [r.mois, r.detailSupprime === true]));
+  const mois = new Set([...parMois.keys(), ...detailSupprime.keys()]);
+  return [...mois].sort((a, b) => comparer(b, a)).map((m) => ({
+    mois: m,
+    nbDepenses: parMois.get(m)?.nbDepenses ?? 0,
+    taille: parMois.get(m)?.taille ?? 0,
+    detailSupprime: detailSupprime.get(m) === true,
+    supprimable: comparer(m, moisCourant) < 0,
+  }));
+}

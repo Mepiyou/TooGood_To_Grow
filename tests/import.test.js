@@ -32,6 +32,21 @@ test('contrôles de contenu', () => {
   assert.equal(erreur({ ...vide, categories: [{ nom: 'C' }] }), KO);
 });
 
+test('revenus et charges : id et montant entier > 0 exigés', () => {
+  const base = { app: 'toogood', schemaVersion: 1 };
+  const erreur = (donnees) => validerImport({ ...base, donnees }).erreur;
+  const KO = 'Fichier incomplet ou corrompu.';
+  for (const champ of ['revenus', 'charges']) {
+    assert.equal(erreur({ ...vide, [champ]: [{ montant: 100 }] }), KO);
+    assert.equal(erreur({ ...vide, [champ]: [{ id: '', montant: 100 }] }), KO);
+    assert.equal(erreur({ ...vide, [champ]: [{ id: 'a', montant: 0 }] }), KO);
+    assert.equal(erreur({ ...vide, [champ]: [{ id: 'a', montant: 10.5 }] }), KO);
+    assert.equal(erreur({ ...vide, [champ]: [{ id: 'a' }] }), KO);
+    assert.equal(erreur({ ...vide, [champ]: [null] }), KO);
+    assert.equal(erreur({ ...vide, [champ]: [{ id: 'a', montant: 100 }] }), undefined);
+  }
+});
+
 test('import valide : tableaux renvoyés tels quels', () => {
   const donnees = { ...vide, depenses: [{ id: 'a', montant: 100, date: '2026-11-01' }], categories: [{ id: 'c', nom: 'Café' }] };
   const r = validerImport({ app: 'toogood', schemaVersion: 1, donnees });

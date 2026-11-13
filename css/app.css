@@ -517,3 +517,29 @@ body.sans-nav #zone-actions { padding-bottom: calc(8px + env(safe-area-inset-bot
 
 .lien-categories { margin: 8px 0 16px; }
 .lien-categories a { display: inline-flex; align-items: center; min-height: 44px; }
+
+/* Historique : histogramme, stockage, liste des mois */
+.titre-section { font-size: 1rem; margin: 16px 0 8px; }
+
+.barres { position: relative; margin: 0 0 16px; }
+.barres-liste { display: flex; align-items: stretch; gap: 4px; list-style: none; margin: 0; padding: 0; }
+.barre-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; }
+.barre-valeur { font-size: 0.75rem; line-height: 1.2; min-height: 1.2em; margin-bottom: 4px; color: var(--texte); text-align: center; overflow-wrap: anywhere; }
+.barre-zone { box-sizing: content-box; display: flex; align-items: flex-end; width: 100%; height: 120px; }
+.barre { display: block; width: 100%; background: var(--texte-secondaire); border-radius: 4px 4px 0 0; }
+.barre-courante .barre { background: var(--accent); }
+.barre-courante .barre-valeur, .barre-courante .barre-mois { font-weight: 700; color: var(--accent); }
+.barre-mois { font-size: 0.75rem; margin-top: 4px; color: var(--texte-secondaire); }
+.barres-axe { border-bottom: 1px solid var(--texte); }
+
+.bandeau-stockage { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; background: var(--gris-doux); border-radius: var(--rayon); }
+.espace-utilise { margin: 0; }
+.actions-stockage { display: flex; gap: 8px; }
+.bouton-fichier { cursor: pointer; }
+.bouton-fichier:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
+.message-stockage { margin: 8px 0 0; color: var(--accent); font-weight: 600; }
+
+.liste-mois { list-style: none; margin: 16px 0; padding: 0; }
+.ligne-mois { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 6px 0; border-bottom: 1px solid var(--bordure); }
+.ligne-mois-texte { min-width: 0; }
+.bouton-compact { width: auto; flex: none; padding: 8px 16px; }

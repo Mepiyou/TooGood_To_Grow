@@ -26,12 +26,17 @@ const categorieValide = (c) => estObjet(c)
   && typeof c.id === 'string' && c.id !== ''
   && typeof c.nom === 'string' && c.nom !== '';
 
+const ligneValide = (l) => estObjet(l)
+  && typeof l.id === 'string' && l.id !== ''
+  && Number.isInteger(l.montant) && l.montant > 0;
+
 export function validerImport(objet) {
   if (!estObjet(objet) || objet.app !== 'toogood') return { ok: false, erreur: ERR_APP };
   if (objet.schemaVersion !== 1) return { ok: false, erreur: ERR_VERSION };
   const { donnees } = objet;
   if (!estObjet(donnees) || !CHAMPS.every((c) => Array.isArray(donnees[c]))
-    || !donnees.depenses.every(depenseValide) || !donnees.categories.every(categorieValide)) {
+    || !donnees.depenses.every(depenseValide)
+    || !donnees.revenus.every(ligneValide) || !donnees.charges.every(ligneValide) || !donnees.categories.every(categorieValide)) {
     return { ok: false, erreur: ERR_CORROMPU };
   }
   return { ok: true, donnees };
