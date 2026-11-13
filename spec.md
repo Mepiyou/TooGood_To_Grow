@@ -408,6 +408,8 @@ Ces décisions complètent ou précisent les sections ci-dessus. En cas de contr
 | D18 | Textes | Avertissement reste à vivre négatif : « Tu as dépassé ton budget de 20 €. Pas de panique : limite tes dépenses jusqu'au 25. » — Bandeau hors ligne : « Hors ligne · tes saisies sont enregistrées sur ce téléphone. » — Premier lancement : « Commence par ajouter tes revenus » + bouton « Ajouter mon premier revenu » → `#/mois/revenus`. |
 | D19 | Regroupement du camembert | Au-delà de 5 catégories, le surplus est fusionné dans « Autre » (pas de libellé « Autres »). |
 | D20 | Date d'une dépense | Interdite dans le futur et dans un mois dont le détail a été supprimé (`detailSupprime: true`). |
+| D29 | Dernier jour du mois sans rentrée | Ligne « Reste à vivre : … · fin du mois aujourd'hui » (le calcul garde 1 jour minimum) — décision utilisateur du 2026-11-13. |
+| D30 | Avertissement en début de mois | Reste à vivre négatif, aucune dépense du mois et une rentrée prévue : « Ta prochaine rentrée arrive le {jour} : limite tes dépenses d'ici là. » ; sinon texte D18 — décision utilisateur du 2026-11-13. |
 
 ### Pratique
 
