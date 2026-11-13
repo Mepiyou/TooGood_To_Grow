@@ -243,7 +243,7 @@ export async function render(container, params, ctx) {
     const type = champs.type.value;
     const resultat = validerEnveloppe(
       { type, nom: champs.nom.value, montantTexte: champs.montant.value, revenuSourceId: champs.revenuSourceId.value },
-      { enveloppes, idEnCours: enveloppe ? enveloppe.id : null, resteAVivre },
+      { enveloppes, idEnCours: enveloppe ? enveloppe.id : null, resteAVivre, ancienMontant: enveloppe ? enveloppe.montantMensuel : null },
     );
     // Les erreurs d'un champ masqué (revenu source pour Plaisir) ne sont jamais produites par la validation.
     panneau.afficherErreurs(resultat.erreurs);

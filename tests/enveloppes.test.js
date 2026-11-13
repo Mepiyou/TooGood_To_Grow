@@ -63,6 +63,21 @@ test('D37 trois enveloppes Épargne maximum (hors idEnCours)', () => {
   assert.equal(validerEnveloppe(saisie, ctx({ enveloppes: enveloppes.slice(1) })).ok, true);
 });
 
+test('D48 plafond plaisir en modification : seulement si le budget augmente', () => {
+  const saisie = (montantTexte, nom = 'Plaisir') => ({ type: 'plaisir', nom, montantTexte });
+  const modif = { enveloppes: [plaisir(60)], idEnCours: 'p', ancienMontant: 6000, resteAVivre: 3000 };
+  // Renommer sans changer le montant : accepté.
+  assert.equal(validerEnveloppe(saisie('60', 'Sorties'), ctx(modif)).ok, true);
+  // Baisser le budget, même au-dessus du reste à vivre : accepté.
+  assert.equal(validerEnveloppe(saisie('40'), ctx(modif)).ok, true);
+  // Augmenter au-delà du reste à vivre : refusé.
+  assert.equal(n(validerEnveloppe(saisie('61'), ctx(modif)).erreurs.montant), 'Le budget plaisir ne peut pas dépasser ton reste à vivre (30 €).');
+  // Augmenter jusqu'au reste à vivre : accepté.
+  assert.equal(validerEnveloppe(saisie('45'), ctx({ ...modif, enveloppes: [plaisir(40)], ancienMontant: 4000, resteAVivre: 4500 })).ok, true);
+  // Création inchangée.
+  assert.equal(n(validerEnveloppe(saisie('31'), ctx({ resteAVivre: 3000 })).erreurs.montant), 'Le budget plaisir ne peut pas dépasser ton reste à vivre (30 €).');
+});
+
 test('D45 budget plaisir plafonné au reste à vivre', () => {
   const saisie = (montantTexte) => ({ type: 'plaisir', nom: 'Plaisir', montantTexte });
   assert.equal(n(validerEnveloppe(saisie('185,01'), ctx()).erreurs.montant), 'Le budget plaisir ne peut pas dépasser ton reste à vivre (185 €).');
