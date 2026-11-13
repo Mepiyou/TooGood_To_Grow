@@ -45,6 +45,24 @@ Lighthouse 12.2.1, profil mobile, Chrome Windows sans interface, build v22-9a547
 | Poids transféré au premier chargement | 36,3 Ko | 36,1 Ko | < 500 Ko (objectif < 150 Ko) |
 | Taille du DOM | 40 éléments | 40 éléments | — |
 
+## Mesures finales après l'étape 7 (2026-11-13, version déployée v38)
+
+Lighthouse 12.2.1, profil mobile, https://mepiyou.github.io/TooGood_To_Grow/ (accueil, premier lancement), compression gzip de GitHub Pages.
+
+| Indicateur | 4G simulée | 3G simulée (RTT 300 ms, 700 kbit/s, CPU ×4) | Cible |
+|---|---|---|---|
+| Lighthouse performance | 100 | 96 | — |
+| Lighthouse accessibilité | 100 | 100 | ≥ 95 |
+| First Contentful Paint | 1,2 s | 2,2 s | — |
+| Largest Contentful Paint | 1,2 s | 2,3 s | < 2,5 s (4G), < 4 s (3G) |
+| Total Blocking Time | 0 ms | 0 ms | — |
+| Cumulative Layout Shift | 0 | 0 | — |
+| Requêtes (vues par Lighthouse) | 6 | 6 | ≤ 15 |
+| Poids transféré au premier chargement | 58,0 Ko | 58,0 Ko | < 500 Ko (objectif < 150 Ko) |
+| Taille du DOM | 45 éléments | 45 éléments | — |
+
+`tools/mesurer.mjs dist` : 8 requêtes (manifest, icônes et précache compris), 200,3 Ko brut, 52,4 Ko gzip, 0 URL externe, aucune API réseau dans le bundle.
+
 ## À faire par l'équipe
 
 - **US9 en mode avion sur un vrai iPhone 8 (Safari iOS 16)** : condition de fin de l'étape 5 (checklist « Étape 5 », points 1 à 8 sur l'appareil).
