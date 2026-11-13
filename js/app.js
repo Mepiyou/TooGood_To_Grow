@@ -3,6 +3,8 @@ import { initialiserCategories } from './store/categories.js';
 import { versISO } from './domain/dates.js';
 import { demarrerRouteur } from './router.js';
 import { initBanniereHorsLigne, afficherBanniereMaj } from './ui/banniere.js';
+import { afficherEncartIOS } from './ui/encart-ios.js';
+import { lireMeta, ecrireMeta } from './store/meta.js';
 import { render as renderAccueil } from './views/accueil.js';
 import { render as renderRevenus } from './views/revenus.js';
 import { render as renderCharges } from './views/charges.js';
@@ -38,6 +40,17 @@ async function demarrer() {
     peutRevenir: () => navigationsInternes > 0,
   };
   routeur = demarrerRouteur(document.getElementById('app'), vues, ctx);
+  // Après le premier rendu, sans attendre : ni la persistance ni l'encart ne retardent l'affichage.
+  demanderPersistance().catch((erreur) => console.error(erreur));
+  afficherEncartIOS(ctx).catch((erreur) => console.error(erreur));
+}
+
+// Une seule demande par installation ; un refus ou une erreur n'a aucune conséquence visible.
+async function demanderPersistance() {
+  if (!navigator.storage || typeof navigator.storage.persist !== 'function') return;
+  if ((await lireMeta('persistDemande')) !== undefined) return;
+  const accorde = await navigator.storage.persist();
+  await ecrireMeta('persistDemande', { date: new Date().toISOString(), accorde });
 }
 
 function afficherErreurDemarrage(erreur) {
