@@ -86,6 +86,14 @@ export function creerSuiviRendus() {
   };
 }
 
+// Retour dans l'app après un changement de date (minuit, appli restée en arrière-plan) :
+// l'écran affiché est recalculé, sauf l'écran d'ajout qui met lui-même sa date à jour
+// et tout formulaire en <dialog> ouvert (le rafraîchir viderait une saisie en cours).
+export function doitRafraichir({ dateRendu, aujourdhui, route, formulaireOuvert = false }) {
+  if (dateRendu === null || route === 'ajout' || formulaireOuvert) return false;
+  return dateRendu !== aujourdhui;
+}
+
 function afficherErreurVue(container) {
   const alerte = document.createElement('div');
   alerte.setAttribute('role', 'alert');
@@ -102,9 +110,11 @@ function afficherErreurVue(container) {
 // `ctx.estActuel()` indique à une vue, après un await, si son rendu compte encore.
 export function demarrerRouteur(container, vues, ctx) {
   const suivi = creerSuiviRendus();
+  let dateRendu = null;
 
   async function afficher(changementDeRoute) {
     const jeton = suivi.demarrer(changementDeRoute);
+    dateRendu = ctx.aujourdhui();
     const route = resoudreRoute(window.location.hash);
     const existe = Boolean(vues[route.nom]);
     const vue = existe ? vues[route.nom] : vues.accueil;
@@ -134,7 +144,19 @@ export function demarrerRouteur(container, vues, ctx) {
     window.scrollTo(0, 0);
   }
 
+  function auRetour() {
+    if (document.visibilityState === 'hidden') return;
+    const route = resoudreRoute(window.location.hash).nom;
+    const formulaireOuvert = Boolean(document.querySelector('dialog[open]'));
+    if (doitRafraichir({ dateRendu, aujourdhui: ctx.aujourdhui(), route, formulaireOuvert })) afficher(false);
+  }
+
   window.addEventListener('hashchange', () => afficher(true));
+  document.addEventListener('visibilitychange', auRetour);
+  // Sur ordinateur, revenir à une fenêtre restée visible n'émet pas visibilitychange ; la garde sur la date évite tout rendu inutile.
+  window.addEventListener('focus', auRetour);
+  // Page restaurée depuis le cache avant/arrière (Safari iOS) : visibilitychange n'est pas toujours émis.
+  window.addEventListener('pageshow', (e) => { if (e.persisted) auRetour(); });
   afficher(true);
   return { rafraichir: () => afficher(false) };
 }

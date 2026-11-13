@@ -6,6 +6,7 @@
 | 1. Revenus (US1) | 2026-11-12 | 8 | 50,3 | 16,3 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US1 revenus. `node tools/mesurer.mjs dist` (build v7-065a78a0) : 0 URL externe, budget respecté |
 | 2. Charges fixes (US3) | 2026-11-12 | 8 | 66,8 | 19,9 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US3 charges, panneau de formulaire commun. `node tools/mesurer.mjs dist` (build v11-8f275940) : 0 URL externe, budget respecté |
 | 3. Dépenses (US4) | 2026-11-12 | 8 | 96,9 | 27,2 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US4 saisie, modification, suppression, liste du mois. `node tools/mesurer.mjs dist` (build v15-01312683) : 0 URL externe, budget respecté |
+| 4. Accueil (US2) | 2026-11-13 | 8 | 106,4 | 29,5 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US2 solde quotidien, reste à vivre, dernières dépenses ; rafraîchissement au retour après un changement de date (focus fenêtre, formulaire ouvert préservé) ; libellés D29 (fin du mois aujourd'hui) et D30 (début de mois sans dépense). `node tools/mesurer.mjs dist` (build v19-659df82c) : 0 URL externe, budget respecté |
 
 Limite de l'outil : les requêtes d'installation du service worker (précache) ne sont pas comptées en plus du premier chargement.
 
@@ -86,3 +87,27 @@ Base vide au départ (DevTools › Application › Storage › Clear site data),
 10. **Modifier depuis la liste** : toucher le crayon d'une ligne → « Modifier la dépense » pré-rempli ; changer le montant et « Valider » → retour à la liste, la ligne et le total sont à jour.
 11. **Supprimer** : la corbeille demande « Supprimer cette dépense de 12 € (Courses) ? » ; « Annuler » ne change rien ; « OK » retire la ligne, le total baisse, le focus passe au lien « Modifier » de la ligne suivante (sinon la précédente, sinon le titre). Un lecteur d'écran annonce « Supprimer : Courses, 12 € ». 320 px : lignes sans défilement horizontal.
 12. **Minuit** : laisser #/ajout ouvert, passer la date système au lendemain (ou attendre minuit), revenir dans l'app : le champ date et sa date max passent à aujourd'hui si on ne les avait pas modifiés.
+
+### Checklist manuelle « Étape 4 »
+
+Base vide au départ (DevTools › Application › Storage › Clear site data), `npm run build && npm run serve`, ouvrir http://localhost:8081.
+
+**Données de démo** (à saisir via l'interface, pour reproduire T2/T3) :
+- `#/mois/revenus` : « Bourse », 450, Récurrent, jour 5 ; « APL », 200, Récurrent, jour 25 ; « Job », 400, **Ponctuel**, date = le 30 du mois dernier, case « Compte pour le mois suivant » cochée (un Job récurrent créé ce mois-ci ne financerait que le mois prochain).
+- `#/mois/charges` : « Transport », 25, jour 1 ; « Loyer CROUS », 560, jour 3 ; « Forfait », 10, jour 12.
+- Dépenses : 70 € au total ce mois-ci, datées d'aujourd'hui ou avant (par exemple 70 € « Courses »).
+
+Les chiffres attendus **dépendent du jour du test** : reste à vivre = 400 (Job) + 450 si on est le 5 ou après + 200 si on est le 25 ou après − 595 (charges) − 70 (dépenses) ; solde = reste ÷ jours jusqu'à la prochaine rentrée, arrondi à l'euro inférieur. Au 10 novembre : « 12 €/jour » et « Reste à vivre : 185 € · prochaine rentrée dans 15 jours (APL, le 25) ». Pour tester à cette date exacte, régler l'horloge système au 10 du mois.
+
+1. **Premier lancement** : base vide → l'accueil affiche « TooGood To Grow », la date du jour en toutes lettres, la carte « Commence par ajouter tes revenus » et le bouton « Ajouter mon premier revenu », qui mène à « Mon mois – Revenus ». Sous la carte : « Dernières dépenses » et « Aucune dépense pour l'instant. ».
+2. **Gherkin US2** (données de démo, au 10 du mois) : carte « Tu peux dépenser », « 12 €/jour » en très gros et en vert, dessous « Reste à vivre : 185 € · prochaine rentrée dans 15 jours (APL, le 25) » ; aucun avertissement.
+3. **Fin du mois** : supprimer temporairement l'APL (ou tester après le 25) → la ligne devient « Reste à vivre : … · fin du mois dans N jours » ; la veille du dernier jour du mois : « dans 1 jour » (singulier).
+4. **Gherkin US4 (fin)** : « + Ajouter une dépense » → 12, « Courses », « Valider » → retour à l'accueil ; la dépense est en tête de « Dernières dépenses » avec la date du jour (« 10 nov. ») et 12 € ; le solde est recalculé (au 10 : reste 173 € → « 11 €/jour »).
+5. **Dernières dépenses** : au plus 3 lignes (pastille, catégorie, date courte, montant), de la plus récente à la plus ancienne ; « Tout voir » mène à « Dépenses ». Une catégorie supprimée s'affiche « Autre ».
+6. **Cas négatif** : ajouter une grosse dépense (par exemple 300 € « Plaisir ») → « 0 €/jour », « Reste à vivre : -… € · … » avec le signe, et dans la carte l'encart orangé « Tu as dépassé ton budget de … €. Pas de panique : limite tes dépenses jusqu'au 25. ». Reste à vivre exactement à 0 € : « 0 €/jour » sans message (B3).
+7. **Lecteur d'écran** (VoiceOver ou NVDA) : le solde est lu « 12 euros par jour », sans le mot « image » (et non « 12 euros barre jour ») ; la carte se lit dans l'ordre titre, solde, reste à vivre, avertissement ; l'avertissement n'est pas annoncé comme une alerte.
+8. **Reprise après changement de date** : laisser l'accueil ouvert, passer à un autre onglet ou une autre appli, avancer l'horloge système d'un jour (ou attendre minuit), revenir (sur ordinateur, on peut revenir par un autre onglet ou une autre fenêtre : événement focus) : la date sous le titre, le solde et les jours restants sont à jour sans recharger. Sur `#/ajout` avec un montant saisi, même manipulation : la saisie est conservée (seule la date du champ suit). Avec un formulaire Revenus ou Charges ouvert, le retour ne le ferme pas (la saisie en cours est conservée).
+9. **320 px** (mode responsive) : le solde en très gros tient dans la carte sans défilement horizontal (essayer aussi un solde à 3 chiffres) ; la ligne reste à vivre passe à la ligne ; « Tout voir » et le bouton du premier lancement font au moins 44 px de haut.
+10. **Zéro requête** : DevTools › Réseau ouvert, recharger puis naviguer Accueil → Dépenses → Accueil : aucune requête hors premier chargement (servi par le service worker).
+11. **Dernier jour du mois sans rentrée** (D29) : sans rentrée prévue après aujourd'hui, le dernier jour du mois (simulable en changeant la date système) → « Reste à vivre : … · fin du mois aujourd'hui » ; la veille : « fin du mois dans 1 jour ».
+12. **Début de mois avant la première rentrée, sans dépense** (D30) : reste à vivre négatif (charges déjà dues, aucune dépense, rentrée prévue plus tard dans le mois) → l'encart affiche « Ta prochaine rentrée arrive le … : limite tes dépenses d'ici là. » ; après une dépense, retour au texte « Tu as dépassé ton budget de … € … ».

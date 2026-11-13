@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { revenusRecus, totalRevenusAttendus, validerRevenu, datePourMois } from '../js/domain/budget.js';
-import { jourEffectif } from '../js/domain/charges.js';
+import { revenusRecus, totalRevenusAttendus, validerRevenu, datePourMois, resteAVivre, prochaineRentree, joursRestants, soldeQuotidien, calculerAccueil } from '../js/domain/budget.js';
+import { jourEffectif, creerCharge } from '../js/domain/charges.js';
 
 const base = { moisSuivant: false, actifDepuis: '2026-10' };
 const rec = (nom, euros, jour, extra = {}) =>
@@ -75,4 +75,35 @@ test('validerRevenu : date d\'un ponctuel limitée au mois affiché (D27)', () =
   assert.equal(v('2026-12-30', true, '2027-01').ok, true);
   assert.equal(v('', true).erreurs.date, 'Choisis une date.');
   assert.equal(validerRevenu({ nom: 'B', montantTexte: '1', recurrent: true, jour: 5, mois: '2026-11' }).ok, true);
+});
+
+test('T2 reste à vivre', () => { assert.equal(resteAVivre({ revenusRecus: 85000, charges: 59500, depenses: 7000 }), 18500); });
+test('T3 solde quotidien', () => {
+  const j = joursRestants('2026-11-10', '2026-11-25'); assert.equal(j, 15); assert.equal(soldeQuotidien(18500, j), 1200);
+});
+test('T4 négatif', () => { assert.equal(soldeQuotidien(-2000, 15), 0); });
+test('T5 aucune rentrée ce mois', () => {
+  const p = prochaineRentree([rec('Bourse', 450, 5)], '2026-11-10');
+  assert.deepEqual(p, { date: '2026-11-30', revenu: null }); assert.equal(joursRestants('2026-11-10', p.date), 20);
+});
+const demo = [rec('Bourse', 450, 5), rec('APL', 200, 25), rec('Job', 400, 30)];
+test('prochaine rentrée = APL le 25', () => { assert.equal(prochaineRentree(demo, '2026-11-10').revenu.nom, 'APL'); });
+test('strictement après aujourd\u2019hui', () => { assert.equal(prochaineRentree(demo, '2026-11-25').revenu.nom, 'Job'); });
+test('D1b : moisSuivant ignoré', () => {
+  const d = [rec('APL', 200, 25), rec('Job', 400, 30, { moisSuivant: true })];
+  assert.deepEqual(prochaineRentree(d, '2026-11-26'), { date: '2026-11-30', revenu: null });
+});
+test('dernier jour du mois : 1 jour minimum', () => { assert.equal(joursRestants('2026-11-30', '2026-11-30'), 1); });
+test('ponctuel futur du mois', () => { assert.equal(prochaineRentree([ponc('Prime', 50, '2026-11-18')], '2026-11-10').date, '2026-11-18'); });
+test('accueil démo, job en mois suivant', () => {
+  const revenus = [rec('Bourse', 450, 5), rec('APL', 200, 25), rec('Job', 400, 30, { moisSuivant: true })];
+  const charges = [['T', 2500, 1], ['L', 56000, 3], ['F', 1000, 12]].map(([nom, montant, jour]) => creerCharge({ nom, montant, jour }, '2026-10'));
+  const depenses = [{ montant: 7000, date: '2026-11-04', mois: '2026-11' }, { montant: 999, date: '2026-10-28', mois: '2026-10' }];
+  const a = calculerAccueil({ revenus, charges, depenses, aujourdhui: '2026-11-10' });
+  assert.equal(a.resteAVivre, 18500); assert.equal(a.soldeQuotidien, 1200); assert.equal(a.joursRestants, 15);
+  assert.equal(a.prochaineRentree.revenu.nom, 'APL'); assert.equal(a.avertissement, false);
+});
+test('avertissement si négatif seulement (B3)', () => {
+  assert.equal(calculerAccueil({ revenus: [], charges: [], depenses: [{ montant: 2000, date: '2026-11-02', mois: '2026-11' }], aujourdhui: '2026-11-10' }).avertissement, true);
+  assert.equal(calculerAccueil({ revenus: [], charges: [], depenses: [], aujourdhui: '2026-11-10' }).avertissement, false);
 });
