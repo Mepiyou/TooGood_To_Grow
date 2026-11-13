@@ -432,3 +432,15 @@ Ces décisions complètent ou précisent les sections ci-dessus. En cas de contr
 | B5 | Après « Valider » | Ajout → `#/` ; modification → `#/depenses`. |
 | B6 | Bouton rouge | `--danger: #B3261E`. |
 | B7 | Suppressions | `confirm()` natif pour revenus, charges et dépenses. La suppression d'un mois garde son écran de confirmation dédié (§ 8.2). |
+
+### Décisions des étapes 5 à 7
+
+| # | Sujet | Décision |
+|---|---|---|
+| D31 | Encart d'installation iOS | Stockage séparé Safari / app installée ; le texte se termine par « Installe-la avant de saisir tes données. » ; l'encart n'est proposé que dans Safari iOS non installé (pas Chrome iOS, Firefox iOS, Edge iOS ni navigateurs intégrés aux apps) (décision du 2026-11-13). |
+| D32 | Persistance du stockage | `navigator.storage.persist()` demandé hors du chemin critique, une fois, puis une seconde fois après installation si la première demande a été refusée (décision du 2026-11-13). |
+| D33 | Déploiement | GitHub Pages par un workflow GitHub Actions qui lance les tests puis `node tools/build.mjs` et publie `dist/` ; seul `dist/` est publié (décision du 2026-11-13). |
+| D34 | Provision à échéance | La dépense créée a la catégorie « Autre » et la note « Provision : <nom> » (ex. « Provision : Assurance auto ») (décision utilisateur du 2026-11-13). |
+| D35 | Montant déjà réservé d'une provision | Somme des parts mensuelles des mois écoulés depuis `debut`, calculée à la volée (pas de champ stocké) ; part du mois = ceil((montantTotal − dejaReserve) ÷ moisRestants) (décision utilisateur du 2026-11-13). |
+| D36 | Épargne | Déduite du reste à vivre du mois dès que le revenu source est reçu (avant, rien n'est déduit) ; le montant épargné du mois est ajouté à `totalCumule` à la clôture du mois et stocké dans le résumé mensuel (`epargne`) ; une épargne suspendue n'est pas déduite (décision utilisateur du 2026-11-13). |
+| D37 | Enveloppes | Au maximum 1 enveloppe Plaisir et 3 enveloppes Épargne (décision utilisateur du 2026-11-13). |
