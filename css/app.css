@@ -229,7 +229,7 @@ body.sans-nav #zone-actions { padding-bottom: calc(8px + env(safe-area-inset-bot
 .champ { margin: 0 0 16px; padding: 0; border: 0; min-width: 0; }
 .champ > label, .champ > legend { display: block; margin-bottom: 4px; padding: 0; font-weight: 600; }
 
-.champ input[type="text"], .champ input[type="number"], .champ input[type="date"] {
+.champ input[type="text"], .champ input[type="number"], .champ input[type="date"], .champ input[type="month"], .champ select {
   display: block;
   width: 100%;
   min-height: 48px;
@@ -242,7 +242,9 @@ body.sans-nav #zone-actions { padding-bottom: calc(8px + env(safe-area-inset-bot
   font-size: 1rem;
 }
 
-.champ input[aria-invalid="true"] { border: 2px solid var(--danger); }
+.champ input[aria-invalid="true"], .champ select[aria-invalid="true"] { border: 2px solid var(--danger); }
+.option input:disabled { cursor: default; }
+.option:has(input:disabled) { color: var(--texte-secondaire); cursor: default; }
 
 .option {
   display: flex;
@@ -441,6 +443,59 @@ body.sans-nav #zone-actions { padding-bottom: calc(8px + env(safe-area-inset-bot
   border: 0;
 }
 .reste-a-vivre { margin: 0; }
+/* US5 : bandeau orange au-dessus de la carte, bordure pour le distinguer de l'encart dans la carte. */
+.bandeau-decouvert {
+  margin: 16px 0 0;
+  padding: 12px 16px;
+  border: 1px solid var(--alerte-texte);
+  border-radius: var(--rayon);
+}
+.bandeau-decouvert p { margin: 0; font-weight: 600; }
+
+/* D45 : avertissement non bloquant sous le formulaire d'ajout ; vide, il n'occupe pas de place. */
+.avertissement-plaisir {
+  margin: 12px 0 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--alerte-fond);
+  color: var(--alerte-texte);
+}
+.avertissement-plaisir:empty { padding: 0; margin: 0; }
+
+/* Enveloppes (US6, US7) : une carte par enveloppe ; la ligne « Modifier » ouvre le formulaire. */
+.liste-enveloppes { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.carte-enveloppe {
+  padding: 12px 16px 16px;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+}
+.carte-type { margin: 0; font-size: 0.875rem; font-weight: 600; color: var(--texte-secondaire); }
+.carte-enveloppe .ligne { border-bottom: 0; padding-inline: 0; min-height: 48px; }
+.ligne-modifier { color: var(--accent); font-weight: 600; white-space: nowrap; }
+.restant-plaisir, .total-epargne, .mention-suspendue { margin: 4px 0 0; }
+.total-epargne { font-size: 1.125rem; }
+.mention-suspendue {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: var(--gris-doux);
+  color: var(--texte-secondaire);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.barre-progression {
+  height: 12px;
+  margin: 8px 0 0;
+  border: 1px solid var(--texte-secondaire);
+  border-radius: 6px;
+  background: var(--gris-doux);
+  overflow: hidden;
+}
+.barre-remplie { height: 100%; background: var(--accent); }
+/* Dépassement : texte et barre en rouge (contraste AA sur fond blanc), le texte dit « Dépassé de … ». */
+.carte-depassee .restant-plaisir { color: var(--danger); font-weight: 600; }
+.carte-depassee .barre-remplie { background: var(--danger); }
+.aide-limite { margin: 16px 0 0; }
 .avertissement-budget {
   margin: 12px 0 0;
   padding: 12px;

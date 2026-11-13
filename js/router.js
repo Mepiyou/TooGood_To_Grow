@@ -1,7 +1,7 @@
 import { rendreNav } from './ui/nav.js';
 
 // Table des routes (spec § 5). `motif` : segments séparés par « / », « :x » = paramètre.
-// Les routes V2 sont présentes mais désactivées en V1 (D14) : elles retombent sur l'accueil.
+// Les routes V2, désactivées en V1 (D14), sont actives depuis l'étape 7 ; V2_ACTIVE = false les fait retomber sur l'accueil.
 export const ROUTES = [
   { motif: '/', nom: 'accueil', onglet: 'accueil', bouton: true, titre: 'Accueil' },
   { motif: '/ajout', nom: 'ajout', onglet: null, bouton: false, titre: 'Ajouter une dépense' },
@@ -16,7 +16,7 @@ export const ROUTES = [
   { motif: '/enveloppes', nom: 'enveloppes', onglet: 'enveloppes', bouton: true, v2: true, titre: 'Enveloppes' },
 ];
 
-const V2_ACTIVE = false;
+const V2_ACTIVE = true;
 
 function correspond(motif, segments) {
   const modele = motif.split('/').filter(Boolean);

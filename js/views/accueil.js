@@ -1,7 +1,8 @@
 import { echapper, couleurSure, COULEUR_REPLI } from '../ui/dom.js';
 import { formatMontant, formatSoldeQuotidien, formatDateLongue, formatJourMois } from '../ui/format.js';
-import { ligneResteAVivre, texteAvertissement, estPremierLancement } from '../ui/textes-accueil.js';
+import { ligneResteAVivre, texteAvertissement, estPremierLancement, texteAlerte } from '../ui/textes-accueil.js';
 import { calculerAccueil } from '../domain/budget.js';
+import { calculerAlerte, depensesDesSeptDerniersJours, moisDesSeptDerniersJours } from '../domain/alertes.js';
 import { categorieDeRepli } from '../domain/categories.js';
 import { trierParDateDesc } from '../domain/depenses.js';
 import { moisDe } from '../domain/dates.js';
@@ -9,6 +10,9 @@ import { listerRevenus } from '../store/revenus.js';
 import { listerCharges } from '../store/charges.js';
 import { depensesDuMois } from '../store/depenses.js';
 import { listerCategories } from '../store/categories.js';
+import { listerEnveloppes } from '../store/enveloppes.js';
+import { listerProvisions } from '../store/provisions.js';
+import { lireMeta, ecrireMeta } from '../store/meta.js';
 
 const NB_DERNIERES = 3;
 
@@ -59,24 +63,57 @@ function rendreDernieres(dernieres, categories) {
   </section>`;
 }
 
+// Bandeau US5 : même principe que le solde (texte visible masqué aux lecteurs d'écran, version lue à côté).
+function rendreAlerte(alerte, accueil) {
+  const { texte, lu } = texteAlerte(alerte, accueil.prochaineRentree);
+  return `<div class="banniere-alerte bandeau-decouvert" role="alert">
+    <p><span aria-hidden="true">${echapper(texte)}</span><span class="visuellement-masque">${echapper(lu)}</span></p>
+  </div>`;
+}
+
 export async function render(container, params, ctx) {
   const aujourdhui = ctx.aujourdhui();
   const mois = moisDe(aujourdhui);
-  const [revenus, charges, depenses, categories] = await Promise.all([
-    listerRevenus(), listerCharges(), depensesDuMois(mois), listerCategories(),
+  // D46 : du 1er au 6, les dépenses du mois précédent entrent dans la moyenne des 7 jours.
+  const moisFenetre = moisDesSeptDerniersJours(aujourdhui).filter((m) => m !== mois);
+  const [revenus, charges, depenses, categories, enveloppes, provisions, alerteVueLe, ...precedentes] = await Promise.all([
+    listerRevenus(), listerCharges(), depensesDuMois(mois), listerCategories(), listerEnveloppes(), listerProvisions(),
+    lireMeta('alerteVueLe'), ...moisFenetre.map((m) => depensesDuMois(m)),
   ]);
   if (!ctx.estActuel()) return;
 
   // Une seule lecture des dépenses du mois : elle sert au calcul et aux dernières dépenses.
   const dernieres = trierParDateDesc(depenses).slice(0, NB_DERNIERES);
-  const carte = estPremierLancement(revenus)
-    ? rendreInvitation()
-    : rendreCarte(calculerAccueil({ revenus, charges, depenses, aujourdhui }), aujourdhui);
+  let carte;
+  let bandeau = '';
+  let alerte = null;
+  if (estPremierLancement(revenus)) {
+    carte = rendreInvitation();
+  } else {
+    const accueil = calculerAccueil({ revenus, charges, depenses, aujourdhui, enveloppes, provisions });
+    carte = rendreCarte(accueil, aujourdhui);
+    alerte = calculerAlerte({
+      resteAVivre: accueil.resteAVivre,
+      depenses7Jours: depensesDesSeptDerniersJours([...precedentes.flat(), ...depenses], aujourdhui),
+      joursRestants: accueil.joursRestants,
+      aujourdhui,
+      alerteVueLe,
+    });
+    // Déjà à découvert (ou à 0 €) : l'encart D18 de la carte le dit déjà ; une prévision « vers aujourd'hui »
+    // à « 0 €/jour » n'apporterait rien. L'alerte n'est alors ni affichée ni marquée comme vue.
+    if (accueil.resteAVivre <= 0) alerte = null;
+    if (alerte) bandeau = rendreAlerte(alerte, accueil);
+  }
 
   container.innerHTML = `<div class="vue-accueil">
     <h1>TooGood To Grow</h1>
     <p class="secondaire">${echapper(formatDateLongue(aujourdhui))}</p>
+    ${bandeau}
     ${carte}
     ${rendreDernieres(dernieres, categories)}
   </div>`;
+
+  // Une seule alerte par jour : le rendu suivant du même jour ne l'affiche plus.
+  // Un échec d'écriture n'empêche pas l'affichage (l'alerte reviendrait simplement au rendu suivant).
+  if (alerte) ecrireMeta('alerteVueLe', aujourdhui).catch((erreur) => console.error(erreur));
 }

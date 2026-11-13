@@ -1,18 +1,13 @@
-import { moisDe, moisPrecedent, construireDate, dateValide, dernierJourDuMois, ecartJours } from './dates.js';
-import { jourEffectif, validerNom, validerJour, chargesDuMois } from './charges.js';
+import { moisDe, moisPrecedent, dateValide, dernierJourDuMois, ecartJours } from './dates.js';
+import { validerNom, validerJour, chargesDuMois } from './charges.js';
+import { datePourMois as datePourMoisReception } from './reception.js';
+import { epargneDuMois } from './enveloppes.js';
+import { provisionsDuMois, provisionsLiberees } from './provisions.js';
 import { totalDepenses } from './depenses.js';
 import { parseMontant } from './montant.js';
 
-// Date de réception qui finance `mois`, ou null. Avec « mois suivant », le
-// revenu reçu le mois précédent finance `mois`.
-export function datePourMois(revenu, mois) {
-  const source = revenu.moisSuivant ? moisPrecedent(mois) : mois;
-  if (revenu.recurrent) {
-    if (revenu.actifDepuis > source) return null;
-    return construireDate(source, jourEffectif(revenu.jour, source));
-  }
-  return moisDe(revenu.date) === source ? revenu.date : null;
-}
+// Défini dans reception.js pour qu'enveloppes.js l'utilise sans cycle d'imports.
+export const datePourMois = datePourMoisReception;
 
 export function revenusRecus(revenus, aujourdhui) {
   const mois = moisDe(aujourdhui);
@@ -100,18 +95,26 @@ export function soldeQuotidien(reste, jours) {
   return reste > 0 ? Math.floor(reste / jours / 100) * 100 : 0;
 }
 
-export function calculerAccueil({ revenus, charges, depenses, aujourdhui }) {
+// D44 : le montant déjà réservé d'une provision soldée ce mois-ci (`liberees`) est réintégré.
+export function calculerAccueil({ revenus, charges, depenses, aujourdhui, enveloppes = [], provisions = [] }) {
   const mois = moisDe(aujourdhui);
   const recus = revenusRecus(revenus, aujourdhui);
   const totalCharges = chargesDuMois(charges, mois);
-  const depensesMois = totalDepenses(depenses.filter((d) => (d.mois ?? moisDe(d.date)) === mois));
-  const reste = resteAVivre({ revenusRecus: recus, charges: totalCharges, depenses: depensesMois });
+  const duMois = depenses.filter((d) => (d.mois ?? moisDe(d.date)) === mois);
+  const depensesMois = totalDepenses(duMois);
+  const epargne = epargneDuMois(enveloppes, revenus, mois, aujourdhui).total;
+  const totalProvisions = provisionsDuMois(provisions, mois);
+  const liberees = provisionsLiberees(duMois);
+  const reste = resteAVivre({ revenusRecus: recus, charges: totalCharges, epargne, provisions: totalProvisions, depenses: depensesMois }) + liberees;
   const rentree = prochaineRentree(revenus, aujourdhui);
   const jours = joursRestants(aujourdhui, rentree.date);
   return {
     revenusRecus: recus,
     charges: totalCharges,
     depensesMois,
+    epargne,
+    provisions: totalProvisions,
+    liberees,
     resteAVivre: reste,
     soldeQuotidien: soldeQuotidien(reste, jours),
     avertissement: reste < 0,

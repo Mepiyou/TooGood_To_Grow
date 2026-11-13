@@ -79,6 +79,37 @@ test('confirmation d’import : spécifique pour un fichier mensuel', () => {
   assert.equal(texteConfirmationImport('2026-13'), generique);
 });
 
+test('import : résumés, enveloppes et provisions contrôlés', () => {
+  const erreur = (donnees) => validerImport({ app: 'toogood', schemaVersion: 1, donnees }).erreur;
+  const KO = 'Fichier incomplet ou corrompu.';
+  // Résumés : mois AAAA-MM et total entier ≥ 0.
+  assert.equal(erreur({ ...vide, resumes: [{ mois: '2026-10', total: 0 }] }), undefined);
+  for (const r of [{ total: 0 }, { mois: '2026-13', total: 0 }, { mois: '2026-10-01', total: 0 }, { mois: '2026-10', total: -1 }, { mois: '2026-10', total: 1.5 }, { mois: '2026-10' }, null]) {
+    assert.equal(erreur({ ...vide, resumes: [r] }), KO);
+  }
+  // Enveloppes : id, type plaisir|epargne, montantMensuel entier > 0.
+  assert.equal(erreur({ ...vide, enveloppes: [{ id: 'e', type: 'epargne', montantMensuel: 100 }, { id: 'p', type: 'plaisir', montantMensuel: 1 }] }), undefined);
+  for (const e of [{ type: 'epargne', montantMensuel: 100 }, { id: '', type: 'epargne', montantMensuel: 100 }, { id: 'e', type: 'autre', montantMensuel: 100 }, { id: 'e', type: 'epargne', montantMensuel: 0 }, { id: 'e', type: 'epargne', montantMensuel: 1.5 }, { id: 'e', type: 'epargne' }]) {
+    assert.equal(erreur({ ...vide, enveloppes: [e] }), KO);
+  }
+  // Provisions : id, montantTotal entier > 0, moisEcheance AAAA-MM.
+  assert.equal(erreur({ ...vide, provisions: [{ id: 'p', montantTotal: 100, moisEcheance: '2027-03' }] }), undefined);
+  for (const p of [{ montantTotal: 100, moisEcheance: '2027-03' }, { id: 'p', montantTotal: 0, moisEcheance: '2027-03' }, { id: 'p', montantTotal: 100 }, { id: 'p', montantTotal: 100, moisEcheance: '2027-3' }]) {
+    assert.equal(erreur({ ...vide, provisions: [p] }), KO);
+  }
+});
+
+test('import : une dépense peut porter note, provisionId et reserve', () => {
+  const erreur = (d) => validerImport({ app: 'toogood', schemaVersion: 1, donnees: { ...vide, depenses: [{ id: 'a', montant: 100, date: '2026-11-01', ...d }] } }).erreur;
+  const KO = 'Fichier incomplet ou corrompu.';
+  assert.equal(erreur({ note: 'Provision : Assurance', provisionId: 'p', reserve: 100 }), undefined);
+  assert.equal(erreur({ reserve: 0 }), undefined);
+  assert.equal(erreur({ note: 3 }), KO);
+  assert.equal(erreur({ provisionId: 3 }), KO);
+  assert.equal(erreur({ reserve: -1 }), KO);
+  assert.equal(erreur({ reserve: 1.5 }), KO);
+});
+
 test('import : le mois d’une dépense est toujours recalculé depuis sa date', () => {
   const d = { id: 'a', montant: 100, date: '2026-10-31', mois: '2026-09', categorieId: 'autre' };
   assert.deepEqual(ligneAImporter('depenses', d), { ...d, mois: '2026-10' });
