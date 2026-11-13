@@ -99,6 +99,9 @@ export async function render(container, params, ctx) {
       aujourdhui,
       alerteVueLe,
     });
+    // Déjà à découvert (ou à 0 €) : l'encart D18 de la carte le dit déjà ; une prévision « vers aujourd'hui »
+    // à « 0 €/jour » n'apporterait rien. L'alerte n'est alors ni affichée ni marquée comme vue.
+    if (accueil.resteAVivre <= 0) alerte = null;
     if (alerte) bandeau = rendreAlerte(alerte, accueil);
   }
 
