@@ -23,6 +23,18 @@ test('moyenne sans arrondi intermédiaire', () => {
   assert.deepEqual(calculerAlerte({ resteAVivre: 1000, depenses7Jours: 1000, joursRestants: 8, aujourdhui: '2026-11-10', alerteVueLe: null }),
     { dateDecouvert: '2026-11-17', soldeConseille: 100 });
 });
+test('déjà à découvert : la date de découvert est aujourd’hui, solde conseillé 0', () => {
+  assert.deepEqual(calculerAlerte({ resteAVivre: -500, depenses7Jours: 700, joursRestants: 10, aujourdhui: '2026-11-10', alerteVueLe: null }),
+    { dateDecouvert: '2026-11-10', soldeConseille: 0 });
+});
+test('joursRestants = 1', () => {
+  assert.deepEqual(calculerAlerte({ resteAVivre: 500, depenses7Jours: 7000, joursRestants: 1, aujourdhui: '2026-11-10', alerteVueLe: null }),
+    { dateDecouvert: '2026-11-10', soldeConseille: 500 });
+});
+test('calcul entier exact : 9/(9/7) ne retombe pas à 6,999…', () => {
+  assert.deepEqual(calculerAlerte({ resteAVivre: 9, depenses7Jours: 9, joursRestants: 8, aujourdhui: '2026-11-10', alerteVueLe: null }),
+    { dateDecouvert: '2026-11-17', soldeConseille: 0 });
+});
 test('depensesDesSeptDerniersJours : fenêtre de 7 jours, aujourd’hui inclus', () => {
   const d = (date, montant) => ({ date, montant });
   const depenses = [d('2026-11-03', 999), d('2026-11-04', 100), d('2026-11-10', 200), d('2026-11-11', 999)];

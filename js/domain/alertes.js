@@ -7,7 +7,8 @@ export function calculerAlerte({ resteAVivre, depenses7Jours, joursRestants, auj
   if (moyenne === 0 || alerteVueLe === aujourdhui) return null;
   if (resteAVivre - moyenne * joursRestants >= 0) return null;
   return {
-    dateDecouvert: ajouterJours(aujourdhui, Math.floor(resteAVivre / moyenne)),
+    // resteAVivre / (depenses7Jours / 7) en entiers, pour éviter un flottant juste sous l'entier ; jamais dans le passé.
+    dateDecouvert: ajouterJours(aujourdhui, Math.max(0, Math.floor((resteAVivre * 7) / depenses7Jours))),
     soldeConseille: soldeQuotidien(resteAVivre, joursRestants),
   };
 }
