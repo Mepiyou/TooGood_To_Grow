@@ -19,13 +19,14 @@ function rendreInvitation() {
   </section>`;
 }
 
-// role="img" : l'aria-label (« 12 euros par jour ») remplace le texte « 12 €/jour », ce qu'un simple <p> ne permet pas.
+// Texte visible masqué aux lecteurs d'écran, remplacé par un texte masqué visuellement (« 12 euros par jour ») :
+// « 12 €/jour » serait lu « barre jour ». La coupure n'est permise qu'entre le montant et « /jour ».
 function rendreCarte(accueil) {
   const solde = formatSoldeQuotidien(accueil.soldeQuotidien);
   const avertissement = texteAvertissement(accueil);
   return `<section class="carte-accueil" aria-labelledby="titre-carte">
     <h2 id="titre-carte" class="carte-titre">Tu peux dépenser</h2>
-    <p class="solde-quotidien" role="img" aria-label="${echapper(solde.lu)}">${echapper(solde.texte)}</p>
+    <p class="solde-quotidien"><span aria-hidden="true">${echapper(formatMontant(accueil.soldeQuotidien))}<wbr><span class="solde-unite">/jour</span></span><span class="visuellement-masque">${echapper(solde.lu)}</span></p>
     <p class="reste-a-vivre">${echapper(ligneResteAVivre(accueil))}</p>
     ${avertissement ? `<p class="avertissement-budget">${echapper(avertissement)}</p>` : ''}
   </section>`;
