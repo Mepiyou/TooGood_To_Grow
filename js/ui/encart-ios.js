@@ -1,6 +1,6 @@
 import { lireMeta, ecrireMeta } from '../store/meta.js';
 
-const TEXTE = "Installe l'app : touche Partager › Sur l'écran d'accueil. L'installation protège tes données.";
+const TEXTE = "Installe l'app : touche Partager › Sur l'écran d'accueil. L'installation protège tes données. Installe-la avant de saisir tes données.";
 
 export function estIOS({ userAgent = '', platform = '', maxTouchPoints = 0 } = {}) {
   if (/iPhone|iPad|iPod/.test(userAgent)) return true;
