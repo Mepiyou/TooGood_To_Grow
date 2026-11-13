@@ -1,11 +1,12 @@
 import { ouvrirDB } from './db.js';
 import { initialiserCategories } from './store/categories.js';
-import { versISO } from './domain/dates.js';
+import { versISO, moisDe } from './domain/dates.js';
 import { demarrerRouteur } from './router.js';
 import { initBanniereHorsLigne, afficherBanniereMaj } from './ui/banniere.js';
 import { afficherEncartIOS } from './ui/encart-ios.js';
 import { doitDemanderPersistance } from './domain/persistance.js';
 import { lireMeta, ecrireMeta } from './store/meta.js';
+import { cloturerMoisPasses } from './store/resumes.js';
 import { render as renderAccueil } from './views/accueil.js';
 import { render as renderRevenus } from './views/revenus.js';
 import { render as renderCharges } from './views/charges.js';
@@ -43,6 +44,7 @@ async function demarrer() {
   routeur = demarrerRouteur(document.getElementById('app'), vues, ctx);
   // Après le premier rendu, sans attendre : ni la persistance ni l'encart ne retardent l'affichage.
   demanderPersistance().catch((erreur) => console.error(erreur));
+  cloturerMoisPasses(moisDe(ctx.aujourdhui())).catch((erreur) => console.error(erreur));
   afficherEncartIOS(ctx).catch((erreur) => console.error(erreur));
 }
 

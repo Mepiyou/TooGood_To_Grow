@@ -1,5 +1,8 @@
 import { echapper, couleurSure, COULEUR_REPLI } from '../ui/dom.js';
-import { formatMontant, formatJourSemaine } from '../ui/format.js';
+import { formatMontant, formatJourSemaine, formatNomMois } from '../ui/format.js';
+import { rendreOngletsDepenses } from '../ui/onglets.js';
+import { rendreDonut } from '../ui/donut.js';
+import { calculerResume, repartitionDonut } from '../domain/resume.js';
 import { categorieDeRepli } from '../domain/categories.js';
 import { groupesParJour, totalDepenses } from '../domain/depenses.js';
 import { moisDe, moisAChange } from '../domain/dates.js';
@@ -46,9 +49,15 @@ export async function render(container, params, ctx) {
     return categories.find((c) => c.id === id) ?? { nom: 'Autre', couleur: COULEUR_REPLI };
   };
 
+  const total = totalDepenses(depenses);
+  const repartition = repartitionDonut(calculerResume(mois, depenses).parCategorie, categories);
+  const donut = repartition.length > 0 ? rendreDonut(repartition, total, formatNomMois(mois)) : '';
+
   container.innerHTML = `<div class="vue-depenses">
     <h1>Dépenses</h1>
-    <p class="total-mois">Total du mois : <strong>${echapper(formatMontant(totalDepenses(depenses)))}</strong></p>
+    ${rendreOngletsDepenses('ce-mois')}
+    ${donut}
+    <p class="total-mois">Total du mois : <strong>${echapper(formatMontant(total))}</strong></p>
     ${groupes.length > 0
     ? groupes.map((g) => `<section class="groupe-jour">
       <h2>${echapper(formatJourSemaine(g.date))}</h2>
@@ -56,6 +65,7 @@ export async function render(container, params, ctx) {
     </section>`).join('')
     : `<p class="secondaire etat-vide">Aucune dépense ce mois-ci.</p>
     <a class="bouton" href="#/ajout">Ajouter une dépense</a>`}
+    <p class="lien-categories"><a href="#/categories">Gérer les catégories</a></p>
     <p class="erreur-formulaire" role="alert" hidden></p>
   </div>`;
 

@@ -1,5 +1,8 @@
 import { lire, ecrire, supprimer, parIndex } from '../db.js';
 import { construireDepense } from '../domain/depenses.js';
+import { moisDe, versISO } from '../domain/dates.js';
+import { moisImpactes } from '../domain/resume.js';
+import { recalculerResumes } from './resumes.js';
 
 export function depensesDuMois(mois) {
   return parIndex('depenses', 'mois', mois);
@@ -19,9 +22,21 @@ export async function enregistrerDepense({ id, montant, categorieId, date }) {
     new Date().toISOString(),
   );
   await ecrire('depenses', depense);
+  await majResumes(existant, depense);
   return depense;
 }
 
-export function supprimerDepense(id) {
-  return supprimer('depenses', id);
+export async function supprimerDepense(id) {
+  const existant = await lire('depenses', id);
+  await supprimer('depenses', id);
+  await majResumes(existant, null);
+}
+
+// La dépense est déjà écrite : un échec ici ne doit pas la faire passer pour non enregistrée.
+async function majResumes(ancienne, nouvelle) {
+  try {
+    await recalculerResumes(moisImpactes(ancienne, nouvelle, moisDe(versISO(new Date()))));
+  } catch (erreur) {
+    console.error(erreur);
+  }
 }

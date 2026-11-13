@@ -1,12 +1,12 @@
-import { lireTout } from '../db.js';
 import { echapper, couleurSure } from '../ui/dom.js';
 import { ouvrirFormCategorie } from '../ui/form-categorie.js';
 import { categorieDeRepli } from '../domain/categories.js';
 import { dateAJour } from '../domain/dates.js';
-import { validerDepense, moisDetailSupprime } from '../domain/depenses.js';
+import { validerDepense } from '../domain/depenses.js';
 import { centimesVersSaisie } from '../domain/montant.js';
 import { listerCategories } from '../store/categories.js';
 import { lireDepense, enregistrerDepense } from '../store/depenses.js';
+import { moisDetailSupprime } from '../store/resumes.js';
 
 const ERREUR_ENREGISTREMENT = "Impossible d'enregistrer la dépense. Réessaie.";
 
@@ -190,7 +190,7 @@ export async function render(container, params, ctx) {
     erreurFormulaire.hidden = true;
     let resultat;
     try {
-      const moisSupprimes = moisDetailSupprime(await lireTout('resumes'));
+      const moisSupprimes = await moisDetailSupprime();
       resultat = validerDepense(
         { montantTexte: montant.value, categorieId: choisie, date: date.value },
         { aujourdhui: ctx.aujourdhui(), moisDetailSupprime: moisSupprimes, categories },

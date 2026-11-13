@@ -162,3 +162,11 @@ Base vide au départ (DevTools › Application › Storage › Clear site data),
 10. **Navigateur sans installation** : Chrome iOS ou navigateur d'Instagram : pas d'encart d'installation.
 11. **Android installé** : après installation, DevTools › Application › Storage indique un stockage persistant.
 12. **iPhone 8 réel, mode avion** : refaire les points 1, 2 et 5 avec le mode avion activé (app installée ou ouverte dans Safari après un premier chargement en ligne).
+
+### Checklist manuelle « Étape 6 »
+
+Base avec quelques dépenses du mois (catégories variées), `npm run build && npm run serve`.
+
+1. **Donut et légende** : `#/depenses` affiche le donut au-dessus de la liste, avec le total du mois au centre ; chaque ligne de la légende (pastille, nom, montant, %) correspond aux dépenses de la liste (somme des montants = total, pourcentages cohérents) ; à 320 px, pas de défilement horizontal, légende sous le donut si besoin ; sans dépense ce mois-ci, aucun donut.
+2. **Lecteur d'écran** (VoiceOver ou NVDA) : le donut est lu une seule fois, « Dépenses de novembre : 70 €. Courses 20 €, 29 %. … » (le trou central est masqué au lecteur d'écran).
+3. **Clôture mensuelle** : simuler un mois passé (console : ouvrir `indexedDB.open('toogood')`, écrire une dépense datée du mois précédent avec son `mois`, supprimer `meta.derniereCloture`), recharger : un résumé du mois passé apparaît dans DevTools › Application › IndexedDB › `toogood` › `resumes` (`total`, `parCategorie`, `nbDepenses`) et `meta.derniereCloture` vaut ce mois ; un nouveau rechargement ne le réécrit pas.
