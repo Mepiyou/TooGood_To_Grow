@@ -3,6 +3,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep, posix } from 'node:path';
 import { gzipSync } from 'node:zlib';
+import { appelsReseau } from './zero-requete.mjs';
 
 const MAX_REQUETES = 15;
 const MAX_OCTETS = 500 * 1024;
@@ -101,15 +102,21 @@ for (const fichier of listerFichiers(dossier)) {
 
 console.log(`Premier chargement (${dossier}) :`);
 console.log(lignes.join('\n'));
+// Zéro requête : le code de l'app n'appelle aucune API réseau (seul sw.js, qui sert le cache, est exempté).
+const cheminApp = join(dossier, 'js', 'app.js');
+const reseau = existsSync(cheminApp) ? appelsReseau(readFileSync(cheminApp, 'utf8')) : [];
+
 console.log(`Requêtes : ${requetes} (max ${MAX_REQUETES})`);
 console.log(`Poids : ${ko(brut)} brut, ${ko(gzip)} gzip (max ${ko(MAX_OCTETS)} brut)`);
 console.log(`URL externes : ${externes.length}`);
 if (externes.length) console.log(externes.join('\n'));
+console.log(`API réseau dans js/app.js : ${reseau.length ? reseau.join(', ') : 'aucune'}`);
 
 const echecs = [];
 if (requetes > MAX_REQUETES) echecs.push('trop de requêtes');
 if (brut > MAX_OCTETS) echecs.push('trop lourd');
 if (externes.length) echecs.push('URL externe');
+if (reseau.length) echecs.push(`appel réseau dans js/app.js (${reseau.join(', ')})`);
 if (absentBloquant) echecs.push('fichier référencé absent');
 console.log(echecs.length ? `ÉCHEC : ${echecs.join(', ')}` : 'OK : budget respecté');
 process.exit(echecs.length ? 1 : 0);

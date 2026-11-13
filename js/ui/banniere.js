@@ -23,9 +23,9 @@ export function initBanniereHorsLigne() {
   const banniere = document.createElement('div');
   banniere.className = 'banniere banniere-hors-ligne';
   banniere.setAttribute('role', 'status');
+  // Le conteneur reste dans l'arbre d'accessibilité : changer son texte suffit à l'annoncer.
   const majVisibilite = () => {
     banniere.textContent = navigator.onLine === false ? TEXTE_HORS_LIGNE : '';
-    banniere.hidden = navigator.onLine !== false;
   };
   majVisibilite();
   window.addEventListener('online', majVisibilite);
