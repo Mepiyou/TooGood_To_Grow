@@ -1,5 +1,5 @@
 import { lireTout, lire, ecrire, transaction, parIndex } from '../db.js';
-import { calculerResume, moisACloturer } from '../domain/resume.js';
+import { calculerResume, moisACloturer, planSuppressionMois } from '../domain/resume.js';
 import { moisDetailSupprime as moisAvecDetailSupprime } from '../domain/depenses.js';
 import { comparer, moisDe } from '../domain/dates.js';
 import { lireMeta } from './meta.js';
@@ -43,6 +43,21 @@ export async function cloturerMoisPasses(moisCourant) {
     tx.objectStore('meta').put({ cle: 'derniereCloture', valeur: mois[mois.length - 1] });
   });
   return aEcrire.map((r) => r.mois);
+}
+
+// Supprime le détail d'un mois passé (et son résumé si `garderTotaux` est faux) en une seule transaction.
+// Renvoie la taille estimée libérée (octets), calculée avant suppression comme dans `statsParMois`.
+export async function supprimerMois({ mois, moisCourant, garderTotaux, maintenant }) {
+  const [depenses, resume] = await Promise.all([parIndex('depenses', 'mois', mois), lire('resumes', mois)]);
+  const plan = planSuppressionMois({ mois, moisCourant, garderTotaux, depenses, resume, maintenant });
+  await transaction(['depenses', 'resumes'], 'readwrite', (tx) => {
+    const magasinDepenses = tx.objectStore('depenses');
+    for (const id of plan.idsDepenses) magasinDepenses.delete(id);
+    const magasinResumes = tx.objectStore('resumes');
+    if (plan.supprimerResume) magasinResumes.delete(mois);
+    else if (plan.resume && plan.resume !== resume) magasinResumes.put(plan.resume);
+  });
+  return depenses.length === 0 ? 0 : JSON.stringify(depenses).length;
 }
 
 export async function recalculerResumes(moisListe) {

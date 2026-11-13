@@ -176,3 +176,7 @@ Base avec quelques dépenses du mois (catégories variées), `npm run build && n
 7. **Import** : « Importer » ce même fichier puis confirmer → « Données importées. » et données identiques (revenus, charges, dépenses, catégories) ; annuler la confirmation ne change rien.
 8. **Import invalide** : importer une copie du fichier dont la clé `"app"` est retirée → message d'erreur « Ce fichier n'est pas une sauvegarde TooGood To Grow. » et aucune donnée modifiée ; un fichier non JSON → « Fichier illisible. ».
 9. **Réseau** : onglet Réseau de DevTools vide (aucune requête) pendant l'export et l'import.
+10. **Suppression, totaux gardés** : sur un mois passé, `Supprimer` → écran « Supprimer octobre 2026 », case « Garder les totaux du mois » cochée par défaut, puis confirmer : retour à l'historique avec « Octobre 2026 supprimé — X Ko libérés » ; le mois reste dans l'histogramme avec son total et la liste affiche « totaux conservés ».
+11. **Suppression complète** : même parcours avec la case décochée : le mois disparaît de l'histogramme (« — ») et de la liste.
+12. **Exporter avant** : « Exporter ce mois avant » télécharge `toogood-AAAA-MM.json` (mois concerné) sans supprimer quoi que ce soit.
+13. **Mois en cours** : ouvrir `#/historique/supprimer/<mois courant>` (ou un mois futur, ou `2026-13`) affiche « Ce mois ne peut pas être supprimé. » et le lien « Retour à l'historique ».

@@ -52,6 +52,12 @@ export function planSuppressionMois({ mois, moisCourant, garderTotaux, depenses,
   return { idsDepenses, resume: { ...recalcule, detailSupprime: true }, supprimerResume: false };
 }
 
+// Paramètre d'URL : un vrai AAAA-MM, strictement avant le mois en cours.
+export function moisSupprimable(mois, moisCourant) {
+  if (typeof mois !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(mois)) return false;
+  return comparer(mois, moisCourant) < 0;
+}
+
 export function repartitionDonut(parCategorie, categories) {
   // Les catégories inconnues (supprimées) retombent dans « autre ».
   const montants = new Map();

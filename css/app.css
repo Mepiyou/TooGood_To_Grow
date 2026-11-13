@@ -543,3 +543,13 @@ body.sans-nav #zone-actions { padding-bottom: calc(8px + env(safe-area-inset-bot
 .ligne-mois { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 6px 0; border-bottom: 1px solid var(--bordure); }
 .ligne-mois-texte { min-width: 0; }
 .bouton-compact { width: auto; flex: none; padding: 8px 16px; }
+
+/* Supprimer un mois */
+.vue-supprimer-mois .bouton { margin-top: 12px; }
+.recap-mois { font-weight: 600; }
+.avertissement-suppression { margin: 12px 0; padding: 12px; border-radius: 8px; background: var(--alerte-fond); color: var(--alerte-texte); }
+.champ-case { display: grid; grid-template-columns: 44px 1fr; align-items: center; margin: 16px 0; }
+.champ-case input { width: 24px; height: 24px; margin: 10px; accent-color: var(--accent); }
+.champ-case label { min-height: 44px; display: flex; align-items: center; font-weight: 600; }
+.aide-case { grid-column: 2; margin: 0; }
+.bouton-lien { background: transparent; border-color: transparent; text-decoration: underline; }

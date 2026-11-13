@@ -7,6 +7,7 @@ import { totalDepenses } from '../domain/depenses.js';
 import { moisDe } from '../domain/dates.js';
 import { listerResumes } from '../store/resumes.js';
 import { depensesDuMois, statsParMois } from '../store/depenses.js';
+import { prendreMessage } from '../ui/message-flash.js';
 import { exporterTout, importerFichier } from '../export.js';
 
 const ERREUR_EXPORT = "Impossible d'exporter les données. Réessaie.";
@@ -67,6 +68,12 @@ export async function render(container, params, ctx) {
   </div>`;
 
   const vue = container.querySelector('.vue-historique');
+  const confirmation = prendreMessage();
+  if (confirmation) {
+    const statut = vue.querySelector('[role="status"]');
+    statut.textContent = confirmation;
+    statut.hidden = false;
+  }
   const alerte = vue.querySelector('[role="alert"]');
   const entree = vue.querySelector('input[type="file"]');
   const effacer = () => { alerte.hidden = true; };
