@@ -3,7 +3,7 @@ import { validerNom } from './charges.js';
 import { parseMontant } from './montant.js';
 import { formatMontant } from '../ui/format.js';
 
-const MAX_EPARGNE = 3;
+export const MAX_EPARGNE = 3;
 
 // D37 : 1 Plaisir et 3 Épargne au plus ; l'enveloppe modifiée ne compte pas contre elle-même.
 // D45 : le budget plaisir ne peut pas dépasser le reste à vivre du moment.
@@ -24,7 +24,9 @@ export function validerEnveloppe({ type, nom, montantTexte, revenuSourceId }, { 
   const montant = parseMontant(montantTexte);
   if (!montant.ok) erreurs.montant = montant.erreur;
   else if (type === 'plaisir' && typeof resteAVivre === 'number' && montant.centimes > resteAVivre) {
-    erreurs.montant = `Le budget plaisir ne peut pas dépasser ton reste à vivre (${formatMontant(resteAVivre)}).`;
+    erreurs.montant = resteAVivre <= 0
+      ? 'Ton reste à vivre ne permet pas de budget plaisir pour l\'instant.'
+      : `Le budget plaisir ne peut pas dépasser ton reste à vivre (${formatMontant(resteAVivre)}).`;
   }
 
   const source = String(revenuSourceId ?? '');

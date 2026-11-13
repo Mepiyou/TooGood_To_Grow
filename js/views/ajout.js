@@ -1,11 +1,14 @@
 import { echapper, couleurSure } from '../ui/dom.js';
 import { ouvrirFormCategorie } from '../ui/form-categorie.js';
 import { categorieDeRepli } from '../domain/categories.js';
-import { dateAJour } from '../domain/dates.js';
+import { dateAJour, moisDe } from '../domain/dates.js';
 import { validerDepense } from '../domain/depenses.js';
-import { centimesVersSaisie } from '../domain/montant.js';
+import { depassementPlaisir, restantPlaisir } from '../domain/enveloppes.js';
+import { centimesVersSaisie, parseMontant } from '../domain/montant.js';
+import { formatMontant } from '../ui/format.js';
 import { listerCategories } from '../store/categories.js';
-import { lireDepense, enregistrerDepense } from '../store/depenses.js';
+import { lireDepense, enregistrerDepense, depensesDuMois } from '../store/depenses.js';
+import { listerEnveloppes } from '../store/enveloppes.js';
 import { moisDetailSupprime } from '../store/resumes.js';
 
 const ERREUR_ENREGISTREMENT = "Impossible d'enregistrer la dépense. Réessaie.";
@@ -14,6 +17,19 @@ export function rendreBoutonCategorie(categorie, choisie) {
   return `<button type="button" class="categorie" data-id="${echapper(categorie.id)}" aria-pressed="${choisie ? 'true' : 'false'}">`
     + `<span class="pastille" style="background:${couleurSure(categorie.couleur)}" aria-hidden="true"></span>`
     + `<span class="categorie-nom">${echapper(categorie.nom)}</span></button>`;
+}
+
+// D45 : prévient (sans bloquer) qu'une dépense « Plaisir » ferait dépasser l'enveloppe du mois.
+// En modification, l'ancienne valeur de la dépense en cours (`idEnCours`) est retirée du déjà dépensé.
+export function avertissementPlaisir({ enveloppes, depensesMois, categorieId, montantTexte, idEnCours }) {
+  const enveloppe = enveloppes.find((e) => e.type === 'plaisir');
+  if (!enveloppe || categorieId !== 'plaisir') return null;
+  const montant = parseMontant(montantTexte);
+  if (!montant.ok) return null;
+  const autres = depensesMois.filter((d) => d.id !== idEnCours);
+  if (!depassementPlaisir(enveloppe, autres, montant.centimes)) return null;
+  const restant = Math.max(0, restantPlaisir(enveloppe, autres));
+  return `Attention : cette dépense dépasse ton enveloppe plaisir (restant : ${formatMontant(restant)}).`;
 }
 
 function erreurChamp(champ) {
@@ -30,9 +46,12 @@ function rendreIntrouvable(container) {
 
 export async function render(container, params, ctx) {
   const enModification = Boolean(params.id);
-  const [categoriesLues, depense] = await Promise.all([
+  const moisCourant = moisDe(ctx.aujourdhui());
+  const [categoriesLues, depense, enveloppes, depensesMois] = await Promise.all([
     listerCategories(),
     enModification ? lireDepense(params.id) : Promise.resolve(undefined),
+    listerEnveloppes(),
+    depensesDuMois(moisCourant),
   ]);
   if (!ctx.estActuel()) return;
   if (enModification && !depense) {
@@ -72,6 +91,7 @@ export async function render(container, params, ctx) {
       <p class="erreur-formulaire" role="alert" hidden></p>
       <button type="submit" class="bouton bouton-principal">Valider</button>
     </form>
+    <p class="avertissement-plaisir" role="status"></p>
   </div>`;
 
   const form = container.querySelector('form');
@@ -82,7 +102,17 @@ export async function render(container, params, ctx) {
   const boutonValider = form.querySelector('button[type="submit"]');
   const erreurFormulaire = form.querySelector('.erreur-formulaire');
   const messageCategorie = container.querySelector('#ajout-categorie-erreur');
+  const zoneAvertissement = container.querySelector('.avertissement-plaisir');
   let occupe = false;
+
+  // L'enveloppe est celle du mois en cours : une dépense datée d'un mois passé n'est pas signalée.
+  // Le conteneur role="status" reste dans la page ; seul son texte change (annoncé sans déplacer le focus).
+  function majAvertissement() {
+    const texte = moisDe(date.value || aujourdhui) === moisCourant
+      ? avertissementPlaisir({ enveloppes, depensesMois, categorieId: choisie, montantTexte: montant.value, idEnCours: depense ? depense.id : null })
+      : null;
+    if (zoneAvertissement.textContent !== (texte ?? '')) zoneAvertissement.textContent = texte ?? '';
+  }
 
   const boutonsCategories = () => [...grille.querySelectorAll('button.categorie[data-id]')];
 
@@ -124,7 +154,12 @@ export async function render(container, params, ctx) {
     choisie = id;
     for (const bouton of boutonsCategories()) bouton.setAttribute('aria-pressed', String(bouton.dataset.id === id));
     if (!messageCategorie.hidden) marquerCategorie('');
+    majAvertissement();
   }
+
+  montant.addEventListener('input', majAvertissement);
+  date.addEventListener('change', majAvertissement);
+  majAvertissement();
 
   function occuper(etat) {
     occupe = etat;

@@ -68,6 +68,10 @@ test('D45 budget plaisir plafonné au reste à vivre', () => {
   assert.equal(n(validerEnveloppe(saisie('185,01'), ctx()).erreurs.montant), 'Le budget plaisir ne peut pas dépasser ton reste à vivre (185 €).');
   assert.equal(validerEnveloppe(saisie('185'), ctx()).ok, true);
   assert.equal(n(validerEnveloppe(saisie('10'), ctx({ resteAVivre: 950 })).erreurs.montant), 'Le budget plaisir ne peut pas dépasser ton reste à vivre (9,50 €).');
+  // Reste à vivre nul ou négatif : message dédié.
+  assert.equal(validerEnveloppe(saisie('10'), ctx({ resteAVivre: 0 })).erreurs.montant, 'Ton reste à vivre ne permet pas de budget plaisir pour l\'instant.');
+  assert.equal(validerEnveloppe(saisie('10'), ctx({ resteAVivre: -500 })).erreurs.montant, 'Ton reste à vivre ne permet pas de budget plaisir pour l\'instant.');
+  assert.notEqual(validerEnveloppe(saisie(''), ctx({ resteAVivre: 0 })).erreurs.montant, 'Ton reste à vivre ne permet pas de budget plaisir pour l\'instant.');
   // L'épargne n'est pas plafonnée par cette règle.
   assert.equal(validerEnveloppe({ type: 'epargne', nom: 'E', montantTexte: '500', revenuSourceId: 'bourse' }, ctx()).ok, true);
 });
