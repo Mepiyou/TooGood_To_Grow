@@ -515,6 +515,11 @@ body.sans-nav #zone-actions { padding-bottom: calc(8px + env(safe-area-inset-bot
 .legende-montant { font-weight: 600; }
 .legende-pourcent { min-width: 3em; text-align: right; color: var(--texte-secondaire); }
 
+/* Écran Catégories : la mention « Par défaut » occupe la place des deux boutons */
+.ligne-mention { color: var(--texte-secondaire); font-size: 0.875rem; white-space: nowrap; padding-inline: 4px; }
+.section-nouvelle-categorie { margin-top: 24px; }
+.section-nouvelle-categorie h2 { margin: 0 0 16px; }
+
 .lien-categories { margin: 8px 0 16px; }
 .lien-categories a { display: inline-flex; align-items: center; min-height: 44px; }
 

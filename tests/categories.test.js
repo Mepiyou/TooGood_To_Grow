@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CATEGORIES_PAR_DEFAUT, PALETTE, normaliserNom, validerCategorie, reaffecterDepenses, reaffecterResumes } from '../js/domain/categories.js';
+import { CATEGORIES_PAR_DEFAUT, PALETTE, normaliserNom, validerCategorie, reaffecterDepenses, reaffecterResumes, planSuppressionCategorie, montantsParCategorie } from '../js/domain/categories.js';
 
 test('5 catégories par défaut exactes', () => {
   assert.deepEqual(CATEGORIES_PAR_DEFAUT.map(c => [c.id, c.nom, c.couleur]), [
@@ -51,4 +51,37 @@ test('résumés : autre créé, résumé sans la catégorie ignoré', () => {
   const r = reaffecterResumes([{ mois: '2026-10', parCategorie: { cafe: 500 } }, { mois: '2026-09', parCategorie: { courses: 900 } }], 'cafe');
   assert.equal(r.length, 1);
   assert.deepEqual(r[0].parCategorie, { autre: 500 });
+});
+
+test('garde-fou : rien à réaffecter pour « autre »', () => {
+  assert.deepEqual(reaffecterDepenses([{ id: 'a', categorieId: 'autre', montant: 100 }], 'autre', 'X'), []);
+  assert.deepEqual(reaffecterResumes([{ mois: '2026-10', parCategorie: { autre: 500 } }], 'autre'), []);
+});
+
+test('planSuppressionCategorie : dépenses et résumés réaffectés vers « autre »', () => {
+  const cafe = { id: 'cafe', nom: 'Café', parDefaut: false };
+  const plan = planSuppressionCategorie({
+    categorie: cafe,
+    depenses: [{ id: 'a', categorieId: 'cafe', montant: 300 }, { id: 'b', categorieId: 'courses', montant: 100 }],
+    resumes: [{ mois: '2026-10', parCategorie: { cafe: 300, autre: 100 } }, { mois: '2026-09', parCategorie: {} }],
+    maintenant: 'X',
+  });
+  assert.deepEqual(plan.depenses.map((d) => [d.id, d.categorieId, d.modifieLe]), [['a', 'autre', 'X']]);
+  assert.deepEqual(plan.resumes.map((r) => [r.mois, r.parCategorie]), [['2026-10', { autre: 400 }]]);
+});
+
+test('planSuppressionCategorie : refuse une catégorie par défaut, « autre » ou absente', () => {
+  const base = { depenses: [], resumes: [], maintenant: 'X' };
+  assert.throws(() => planSuppressionCategorie({ ...base, categorie: { id: 'courses', parDefaut: true } }));
+  assert.throws(() => planSuppressionCategorie({ ...base, categorie: { id: 'autre', parDefaut: false } }));
+  assert.throws(() => planSuppressionCategorie({ ...base, categorie: undefined }));
+});
+
+test('montantsParCategorie : somme par catégorie, inconnue rattachée à « autre »', () => {
+  const cats = CATEGORIES_PAR_DEFAUT;
+  const m = montantsParCategorie([
+    { categorieId: 'courses', montant: 500 }, { categorieId: 'courses', montant: 250 },
+    { categorieId: 'fantome', montant: 100 }, { categorieId: 'autre', montant: 50 },
+  ], cats);
+  assert.deepEqual(m, { courses: 750, autre: 150 });
 });

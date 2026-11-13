@@ -39,7 +39,9 @@ export function prochainOrdre(categories) {
 }
 
 // Suppression d'une catégorie : ne renvoie que les dépenses à réécrire.
+// « autre » reçoit les dépenses des catégories supprimées : il n'a jamais rien à réaffecter.
 export function reaffecterDepenses(depenses, categorieId, maintenant) {
+  if (categorieId === 'autre') return [];
   return depenses
     .filter((d) => d.categorieId === categorieId)
     .map((d) => ({ ...d, categorieId: 'autre', modifieLe: maintenant }));
@@ -47,6 +49,7 @@ export function reaffecterDepenses(depenses, categorieId, maintenant) {
 
 // Le montant de la catégorie supprimée passe dans `autre` ; seuls les résumés concernés sont renvoyés.
 export function reaffecterResumes(resumes, categorieId) {
+  if (categorieId === 'autre') return [];
   return resumes
     .filter((r) => r.parCategorie && categorieId in r.parCategorie)
     .map((r) => {
@@ -55,4 +58,24 @@ export function reaffecterResumes(resumes, categorieId) {
       delete parCategorie[categorieId];
       return { ...r, parCategorie };
     });
+}
+
+// Ce que la suppression doit écrire. Lève une erreur pour une catégorie absente, par défaut ou « autre ».
+export function planSuppressionCategorie({ categorie, depenses, resumes, maintenant }) {
+  if (!categorie) throw new Error('Catégorie introuvable');
+  if (categorie.parDefaut || categorie.id === 'autre') throw new Error('Une catégorie par défaut ne se supprime pas');
+  return {
+    depenses: reaffecterDepenses(depenses, categorie.id, maintenant),
+    resumes: reaffecterResumes(resumes, categorie.id),
+  };
+}
+
+// Montant par catégorie : une catégorie inconnue est rattachée à « autre ».
+export function montantsParCategorie(depenses, categories) {
+  const montants = {};
+  for (const d of depenses) {
+    const id = categorieDeRepli(d.categorieId, categories);
+    montants[id] = (montants[id] ?? 0) + d.montant;
+  }
+  return montants;
 }
