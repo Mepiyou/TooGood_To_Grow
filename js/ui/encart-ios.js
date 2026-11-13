@@ -8,7 +8,11 @@ export function estIOS({ userAgent = '', platform = '', maxTouchPoints = 0 } = {
   return platform === 'MacIntel' && maxTouchPoints > 1;
 }
 
+// Navigateurs iOS tiers et navigateurs intégrés aux apps : « Partager › Sur l'écran d'accueil » n'y existe pas.
+const NAVIGATEUR_SANS_INSTALLATION = /CriOS|FxiOS|EdgiOS|FBAN|FBAV|Instagram|Line\//;
+
 export function encartAProposer(entrees = {}) {
+  if (NAVIGATEUR_SANS_INSTALLATION.test(entrees.userAgent || '')) return false;
   return estIOS(entrees) && entrees.standalone !== true;
 }
 
@@ -34,6 +38,12 @@ export async function afficherEncartIOS(_ctx) {
   bouton.textContent = 'Compris';
   bouton.addEventListener('click', () => {
     encart.remove();
+    // Le bouton disparaît avec l'encart : le focus passe au titre de la vue plutôt que de retomber sur body.
+    const titre = document.querySelector('#app h1');
+    if (titre) {
+      if (!titre.hasAttribute('tabindex')) titre.setAttribute('tabindex', '-1');
+      titre.focus();
+    }
     ecrireMeta('encartIosVu', true).catch((erreur) => console.error(erreur));
   });
   encart.append(texte, bouton);
