@@ -29,6 +29,11 @@ export function decisionResume(existant, recalcule) {
   return existant ? 'supprimer' : 'garder';
 }
 
+// Vrai si le mois précédent est déjà clôturé : la clôture n'a alors rien à lire.
+export function clotureAJour(derniereCloture, moisCourant) {
+  return Boolean(derniereCloture) && comparer(derniereCloture, moisPrecedent(moisCourant)) >= 0;
+}
+
 export function moisACloturer(derniereCloture, moisCourant, premierMois) {
   if (premierMois === null || premierMois === undefined) return [];
   let debut = derniereCloture ? moisSuivant(derniereCloture) : premierMois;

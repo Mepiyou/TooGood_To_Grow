@@ -1,5 +1,5 @@
 import { lireTout, lire, ecrire, supprimer, transaction, parIndex } from '../db.js';
-import { calculerResume, decisionResume, moisACloturer, planSuppressionMois } from '../domain/resume.js';
+import { calculerResume, clotureAJour, decisionResume, moisACloturer, planSuppressionMois } from '../domain/resume.js';
 import { moisDetailSupprime as moisAvecDetailSupprime } from '../domain/depenses.js';
 import { comparer, moisDe } from '../domain/dates.js';
 import { lireMeta } from './meta.js';
@@ -19,11 +19,9 @@ export async function moisDetailSupprime() {
 // Recalcule les résumés des mois passés non encore clôturés, puis avance `derniereCloture`, en une transaction.
 // Un mois sans dépense n'a pas de résumé ; un résumé dont le détail a été supprimé n'est jamais recalculé.
 export async function cloturerMoisPasses(moisCourant) {
-  const [derniereCloture, depenses, resumes] = await Promise.all([
-    lireMeta('derniereCloture'),
-    lireTout('depenses'),
-    lireTout('resumes'),
-  ]);
+  const derniereCloture = await lireMeta('derniereCloture');
+  if (clotureAJour(derniereCloture, moisCourant)) return [];
+  const [depenses, resumes] = await Promise.all([lireTout('depenses'), lireTout('resumes')]);
   const premierMois = depenses.reduce((min, d) => {
     const m = d.mois ?? moisDe(d.date);
     return min === null || comparer(m, min) < 0 ? m : min;

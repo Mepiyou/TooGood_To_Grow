@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   calculerResume, moisACloturer, moisImpactes, planSuppressionMois, repartitionDonut, totauxSixMois,
-  decisionResume,
+  decisionResume, clotureAJour,
 } from '../js/domain/resume.js';
 
 const oct = [['d1','courses',1200,'2026-10-02'],['d2','courses',800,'2026-10-09'],['d3','transport',2500,'2026-10-01'],['d4','sorties',1500,'2026-10-17'],['d5','plaisir',1000,'2026-10-25']]
@@ -99,6 +99,14 @@ test('donut : autre déjà dans le top, fusion sans doublon', () => {
 test('six mois : détail supprimé garde son total', () => {
   const t = totauxSixMois([{ mois: '2026-10', total: 7000, detailSupprime: true }], '2026-11', 0);
   assert.equal(t.at(-2).total, 7000);
+});
+
+test('clotureAJour : mois précédent déjà clôturé', () => {
+  assert.equal(clotureAJour('2026-10', '2026-11'), true);
+  assert.equal(clotureAJour('2026-12', '2027-01'), true);
+  assert.equal(clotureAJour('2026-09', '2026-11'), false);
+  assert.equal(clotureAJour(undefined, '2026-11'), false);
+  assert.equal(clotureAJour(null, '2026-11'), false);
 });
 
 test('mois sans dépense : pas de résumé', () => {

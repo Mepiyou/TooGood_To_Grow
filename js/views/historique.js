@@ -5,7 +5,7 @@ import { rendreBarres } from '../ui/barres.js';
 import { totauxSixMois, lignesHistorique } from '../domain/resume.js';
 import { totalDepenses } from '../domain/depenses.js';
 import { moisDe } from '../domain/dates.js';
-import { listerResumes } from '../store/resumes.js';
+import { listerResumes, cloturerMoisPasses } from '../store/resumes.js';
 import { depensesDuMois, statsParMois } from '../store/depenses.js';
 import { prendreMessage } from '../ui/message-flash.js';
 import { exporterTout, importerFichier } from '../export.js';
@@ -40,6 +40,12 @@ function rendreLigne(ligne) {
 
 export async function render(container, params, ctx) {
   const moisCourant = moisDe(ctx.aujourdhui());
+  // Une PWA restée en arrière-plan d'un mois à l'autre n'a pas relancé la clôture du démarrage.
+  try {
+    await cloturerMoisPasses(moisCourant);
+  } catch (erreur) {
+    console.error(erreur);
+  }
   const [resumes, depensesCourantes, stats, usage] = await Promise.all([
     listerResumes(), depensesDuMois(moisCourant), statsParMois(), lireUsage(),
   ]);
