@@ -70,3 +70,9 @@ test('doitRafraichir : seulement si la date a changé, jamais sur l\'écran d\'a
   assert.equal(doitRafraichir({ dateRendu: '2026-11-10', aujourdhui: '2026-11-11', route: 'ajout' }), false);
   assert.equal(doitRafraichir({ dateRendu: null, aujourdhui: '2026-11-11', route: 'accueil' }), false);
 });
+
+test('doitRafraichir : jamais si un formulaire en dialog est ouvert', () => {
+  assert.equal(doitRafraichir({ dateRendu: '2026-11-10', aujourdhui: '2026-11-11', route: 'revenus', formulaireOuvert: true }), false);
+  assert.equal(doitRafraichir({ dateRendu: '2026-11-10', aujourdhui: '2026-11-11', route: 'revenus', formulaireOuvert: false }), true);
+  assert.equal(doitRafraichir({ dateRendu: '2026-11-10', aujourdhui: '2026-11-11', route: 'revenus' }), true);
+});

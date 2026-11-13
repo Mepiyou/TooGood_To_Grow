@@ -88,9 +88,9 @@ export function creerSuiviRendus() {
 
 // Retour dans l'app après un changement de date (minuit, appli restée en arrière-plan) :
 // l'écran affiché est recalculé, sauf l'écran d'ajout qui met lui-même sa date à jour
-// (le rafraîchir viderait une saisie en cours).
-export function doitRafraichir({ dateRendu, aujourdhui, route }) {
-  if (dateRendu === null || route === 'ajout') return false;
+// et tout formulaire en <dialog> ouvert (le rafraîchir viderait une saisie en cours).
+export function doitRafraichir({ dateRendu, aujourdhui, route, formulaireOuvert = false }) {
+  if (dateRendu === null || route === 'ajout' || formulaireOuvert) return false;
   return dateRendu !== aujourdhui;
 }
 
@@ -147,11 +147,14 @@ export function demarrerRouteur(container, vues, ctx) {
   function auRetour() {
     if (document.visibilityState === 'hidden') return;
     const route = resoudreRoute(window.location.hash).nom;
-    if (doitRafraichir({ dateRendu, aujourdhui: ctx.aujourdhui(), route })) afficher(false);
+    const formulaireOuvert = Boolean(document.querySelector('dialog[open]'));
+    if (doitRafraichir({ dateRendu, aujourdhui: ctx.aujourdhui(), route, formulaireOuvert })) afficher(false);
   }
 
   window.addEventListener('hashchange', () => afficher(true));
   document.addEventListener('visibilitychange', auRetour);
+  // Sur ordinateur, revenir à une fenêtre restée visible n'émet pas visibilitychange ; la garde sur la date évite tout rendu inutile.
+  window.addEventListener('focus', auRetour);
   // Page restaurée depuis le cache avant/arrière (Safari iOS) : visibilitychange n'est pas toujours émis.
   window.addEventListener('pageshow', (e) => { if (e.persisted) auRetour(); });
   afficher(true);
