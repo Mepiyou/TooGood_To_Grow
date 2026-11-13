@@ -1,5 +1,5 @@
 import { lireTout, lire, ecrire, transaction } from '../db.js';
-import { CATEGORIES_PAR_DEFAUT, trierCategories, prochainOrdre } from '../domain/categories.js';
+import { CATEGORIES_PAR_DEFAUT, trierCategories, prochainOrdre, planSuppressionCategorie } from '../domain/categories.js';
 
 // Idempotent, même en cas d'appels concurrents : la lecture et l'ajout se font dans
 // une seule transaction readwrite, donc sérialisée par IndexedDB.
@@ -33,6 +33,27 @@ export async function creerCategorie({ nom, couleur }) {
     };
   });
   return categorie;
+}
+
+// Catégorie, dépenses et résumés sont lus puis écrits dans la même transaction readwrite : une dépense
+// ajoutée entre-temps ne peut pas échapper à la réaffectation, et tout est annulé en cas d'échec.
+// Une exception levée dans un callback de requête (catégorie par défaut ou absente) annule la transaction.
+export function supprimerCategorie(id) {
+  const maintenant = new Date().toISOString();
+  return transaction(['categories', 'depenses', 'resumes'], 'readwrite', (tx) => {
+    const lectures = {};
+    const quandPret = (cle) => (e) => {
+      lectures[cle] = e.target.result;
+      if (!('categorie' in lectures && 'depenses' in lectures && 'resumes' in lectures)) return;
+      const plan = planSuppressionCategorie({ ...lectures, maintenant });
+      tx.objectStore('categories').delete(id);
+      for (const depense of plan.depenses) tx.objectStore('depenses').put(depense);
+      for (const resume of plan.resumes) tx.objectStore('resumes').put(resume);
+    };
+    tx.objectStore('categories').get(id).onsuccess = quandPret('categorie');
+    tx.objectStore('depenses').getAll().onsuccess = quandPret('depenses');
+    tx.objectStore('resumes').getAll().onsuccess = quandPret('resumes');
+  });
 }
 
 export async function modifierCategorie(id, { nom, couleur }) {

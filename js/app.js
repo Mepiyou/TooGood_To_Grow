@@ -1,16 +1,20 @@
 import { ouvrirDB } from './db.js';
 import { initialiserCategories } from './store/categories.js';
-import { versISO } from './domain/dates.js';
+import { versISO, moisDe } from './domain/dates.js';
 import { demarrerRouteur } from './router.js';
 import { initBanniereHorsLigne, afficherBanniereMaj } from './ui/banniere.js';
 import { afficherEncartIOS } from './ui/encart-ios.js';
 import { doitDemanderPersistance } from './domain/persistance.js';
 import { lireMeta, ecrireMeta } from './store/meta.js';
+import { cloturerMoisPasses } from './store/resumes.js';
 import { render as renderAccueil } from './views/accueil.js';
 import { render as renderRevenus } from './views/revenus.js';
 import { render as renderCharges } from './views/charges.js';
 import { render as renderAjout } from './views/ajout.js';
 import { render as renderDepenses } from './views/depenses.js';
+import { render as renderHistorique } from './views/historique.js';
+import { render as renderSupprimerMois } from './views/supprimer-mois.js';
+import { render as renderCategories } from './views/categories.js';
 
 // Vues des étapes suivantes : le routeur affiche l'accueil tant qu'elles n'existent pas.
 const vues = {
@@ -19,6 +23,9 @@ const vues = {
   charges: { render: renderCharges },
   ajout: { render: renderAjout },
   depenses: { render: renderDepenses },
+  historique: { render: renderHistorique },
+  'supprimer-mois': { render: renderSupprimerMois },
+  categories: { render: renderCategories },
 };
 
 const MESSAGE_ERREUR = "Impossible d'ouvrir les données de l'application sur ce téléphone. Si tu es en navigation privée, ouvre l'app dans un onglet normal.";
@@ -43,6 +50,7 @@ async function demarrer() {
   routeur = demarrerRouteur(document.getElementById('app'), vues, ctx);
   // Après le premier rendu, sans attendre : ni la persistance ni l'encart ne retardent l'affichage.
   demanderPersistance().catch((erreur) => console.error(erreur));
+  cloturerMoisPasses(moisDe(ctx.aujourdhui())).catch((erreur) => console.error(erreur));
   afficherEncartIOS(ctx).catch((erreur) => console.error(erreur));
 }
 

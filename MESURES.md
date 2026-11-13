@@ -7,9 +7,42 @@
 | 2. Charges fixes (US3) | 2026-11-12 | 8 | 66,8 | 19,9 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US3 charges, panneau de formulaire commun. `node tools/mesurer.mjs dist` (build v11-8f275940) : 0 URL externe, budget respecté |
 | 3. Dépenses (US4) | 2026-11-12 | 8 | 96,9 | 27,2 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US4 saisie, modification, suppression, liste du mois. `node tools/mesurer.mjs dist` (build v15-01312683) : 0 URL externe, budget respecté |
 | 4. Accueil (US2) | 2026-11-13 | 8 | 106,4 | 29,5 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US2 solde quotidien, reste à vivre, dernières dépenses ; rafraîchissement au retour après un changement de date (focus fenêtre, formulaire ouvert préservé) ; libellés D29 (fin du mois aujourd'hui) et D30 (début de mois sans dépense). `node tools/mesurer.mjs dist` (build v19-659df82c) : 0 URL externe, budget respecté |
-| 5. Hors ligne (US9) | 2026-11-13 | 8 | 111,3 | 31,1 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US9 persistance du stockage, encart d'installation iOS (Safari seulement), persistance redemandée une fois installée, bandeau hors ligne annoncé, zone sûre en bas d'écran. `node tools/mesurer.mjs dist` (build v21-45f7c168) : 0 URL externe, aucune API réseau dans js/app.js, budget respecté |
+| 5. Hors ligne (US9) | 2026-11-13 | 8 | 111,4 | 31,1 | 1,8 s / 3,5 s (Lighthouse local) | 100 (Lighthouse local) | à vérifier par l'équipe | US9 persistance du stockage, encart d'installation iOS (Safari seulement), persistance redemandée une fois installée, bandeau hors ligne annoncé, zone sûre en bas d'écran. `node tools/mesurer.mjs dist` (build v21-45f7c168) : 0 URL externe, aucune API réseau dans js/app.js, budget respecté |
+| 6. Graphiques et stockage | 2026-11-13 | 8 | 155,7 | 41,9 | à mesurer sur la version déployée | à mesurer sur la version déployée | à vérifier par l'équipe | Donut et légende, clôture mensuelle et résumés (pas de résumé pour un mois vide, D41), histogramme 6 mois, espace utilisé, export/import JSON (avertissement pour un fichier mensuel, D39), suppression d'un mois, gestion des catégories. `node tools/mesurer.mjs dist` (build v31-7e62cecd) : 0 URL externe, aucune API réseau dans js/app.js, budget respecté |
 
 Limite de l'outil : les requêtes d'installation du service worker (précache) ne sont pas comptées en plus du premier chargement.
+
+## Mesures Lighthouse après l'étape 5 (2026-11-13)
+
+Lighthouse 12.2.1, profil mobile, Chrome Windows sans interface, build v22-9a547c94 servi en local par `python3 -m http.server` (**sans compression** : le poids transféré mesuré est le poids brut ; sur un hébergeur qui compresse, comme GitHub Pages, il tombe à ~31 Ko gzip et les temps baissent). Page mesurée : accueil, base vide (premier lancement).
+
+| Indicateur | 4G simulée (défaut Lighthouse : RTT 150 ms, 1,6 Mbit/s, CPU ×4) | 3G simulée (RTT 300 ms, 700 kbit/s, CPU ×4) | Cible |
+|---|---|---|---|
+| Lighthouse performance | 99 | 84 | — |
+| Lighthouse accessibilité | 100 | 100 | ≥ 95 |
+| First Contentful Paint | 1,6 s | 3,2 s | — |
+| Largest Contentful Paint | 1,8 s | 3,5 s | < 2,5 s (4G), < 4 s (3G) |
+| Total Blocking Time | 30 ms | 30 ms | — |
+| Cumulative Layout Shift | 0 | 0 | — |
+| Requêtes (vues par Lighthouse) | 6 | 6 | ≤ 15 |
+| Poids transféré (sans compression) | 106,7 Ko | 106,7 Ko | < 500 Ko |
+| Taille du DOM | 40 éléments | 40 éléments | — |
+
+`tools/mesurer.mjs dist` (compte aussi le manifest, les icônes et le précache du service worker) : 8 requêtes, 111,4 Ko brut, 31,1 Ko gzip, 0 URL externe, aucune API réseau dans le bundle.
+
+### Version déployée (https://mepiyou.github.io/TooGood_To_Grow/, compression gzip de GitHub Pages)
+
+| Indicateur | 4G simulée | 3G simulée | Cible |
+|---|---|---|---|
+| Lighthouse performance | 98 | 97 | — |
+| Lighthouse accessibilité | 100 | 100 | ≥ 95 |
+| First Contentful Paint | 1,2 s | 2,1 s | — |
+| Largest Contentful Paint | 1,4 s | 2,2 s | < 2,5 s (4G), < 4 s (3G) |
+| Total Blocking Time | 140 ms | 10 ms | — |
+| Cumulative Layout Shift | 0 | 0 | — |
+| Requêtes (vues par Lighthouse) | 6 | 6 | ≤ 15 |
+| Poids transféré au premier chargement | 36,3 Ko | 36,1 Ko | < 500 Ko (objectif < 150 Ko) |
+| Taille du DOM | 40 éléments | 40 éléments | — |
 
 ## À faire par l'équipe
 
@@ -130,3 +163,29 @@ Base vide au départ (DevTools › Application › Storage › Clear site data),
 10. **Navigateur sans installation** : Chrome iOS ou navigateur d'Instagram : pas d'encart d'installation.
 11. **Android installé** : après installation, DevTools › Application › Storage indique un stockage persistant.
 12. **iPhone 8 réel, mode avion** : refaire les points 1, 2 et 5 avec le mode avion activé (app installée ou ouverte dans Safari après un premier chargement en ligne).
+
+### Checklist manuelle « Étape 6 »
+
+Base avec quelques dépenses du mois (catégories variées), `npm run build && npm run serve`.
+
+1. **Donut et légende** : `#/depenses` affiche le donut au-dessus de la liste, avec le total du mois au centre ; chaque ligne de la légende (pastille, nom, montant, %) correspond aux dépenses de la liste (somme des montants = total, pourcentages cohérents) ; à 320 px, pas de défilement horizontal, légende sous le donut si besoin ; sans dépense ce mois-ci, aucun donut.
+2. **Lecteur d'écran** (VoiceOver ou NVDA) : le donut est lu une seule fois, « Dépenses de novembre : 70 €. Courses 20 €, 29 %. … » (le trou central est masqué au lecteur d'écran).
+3. **Clôture mensuelle** : simuler un mois passé (console : ouvrir `indexedDB.open('toogood')`, écrire une dépense datée du mois précédent avec son `mois`, supprimer `meta.derniereCloture`), recharger : un résumé du mois passé apparaît dans DevTools › Application › IndexedDB › `toogood` › `resumes` (`total`, `parCategorie`, `nbDepenses`) et `meta.derniereCloture` vaut ce mois ; un nouveau rechargement ne le réécrit pas.
+4. **Histogramme** : `#/historique` affiche 6 barres cohérentes avec les mois (valeur au-dessus, mois abrégé dessous, « — » sans donnée), le mois en cours en vert, les autres en gris, ligne d'axe à zéro ; lisible à 320 px sans défilement horizontal ; lu une seule fois au lecteur d'écran (« Dépenses des 6 derniers mois : … »).
+5. **Espace utilisé** : le bandeau affiche « Espace utilisé : N Ko sur ce téléphone » (ou « inconnu » si l'API manque) ; la liste des mois donne « octobre 2026 · 23 dépenses · environ 4 Ko », le mois en cours n'a pas de bouton « Supprimer ».
+6. **Export** : « Exporter » télécharge `toogood-AAAA-MM-JJ.json` (date du jour) contenant `"app": "toogood"` et les 7 listes.
+7. **Import** : « Importer » ce même fichier puis confirmer → « Données importées. » et données identiques (revenus, charges, dépenses, catégories) ; annuler la confirmation ne change rien.
+8. **Import invalide** : importer une copie du fichier dont la clé `"app"` est retirée → message d'erreur « Ce fichier n'est pas une sauvegarde TooGood To Grow. » et aucune donnée modifiée ; un fichier non JSON → « Fichier illisible. ».
+9. **Réseau** : onglet Réseau de DevTools vide (aucune requête) pendant l'export et l'import.
+10. **Suppression, totaux gardés** : sur un mois passé, `Supprimer` → écran « Supprimer octobre 2026 », case « Garder les totaux du mois » cochée par défaut, puis confirmer : retour à l'historique avec « Octobre 2026 supprimé — X Ko libérés » ; le mois reste dans l'histogramme avec son total et la liste affiche « totaux conservés ».
+11. **Suppression complète** : même parcours avec la case décochée : le mois disparaît de l'histogramme (« — ») et de la liste.
+12. **Exporter avant** : « Exporter ce mois avant » télécharge `toogood-AAAA-MM.json` (mois concerné) sans supprimer quoi que ce soit.
+13. **Mois au détail déjà supprimé** : sur un mois « totaux conservés », l'écran affiche « Détail déjà supprimé · X € », sans case à cocher, avec « Les totaux d'octobre disparaîtront des graphiques. » et le bouton « Supprimer les totaux d'octobre 2026 » ; après confirmation, message « Octobre 2026 supprimé » (sans taille), le mois disparaît de l'histogramme et de la liste.
+14. **Mois en cours** : ouvrir `#/historique/supprimer/<mois courant>` (ou un mois futur, ou `2026-13`) affiche « Ce mois ne peut pas être supprimé. » et le lien « Retour à l'historique ».
+15. **Créer une catégorie** : depuis « Gérer les catégories » (`#/categories`), créer « Café » (nom + pastille + « Créer la catégorie ») : la ligne apparaît avec 0 € et le focus est sur son bouton « Modifier : Café » ; un nom déjà pris affiche « Cette catégorie existe déjà. ».
+16. **Renommer** : « Modifier : Café » ouvre le dialog, renommer en « Cafés » : la ligne est mise à jour, le focus revient sur son bouton « Modifier » ; `#/ajout` affiche « Cafés » dans la grille. Annuler ou Échap rend le focus au bouton « Modifier ».
+17. **Supprimer vers « Autre » (T11)** : affecter 4 dépenses à « Café », puis « Supprimer : Café » → confirmation « Supprimer « Café » ? Ses dépenses passeront dans « Autre ». » ; après confirmation, les 4 dépenses sont en « Autre » dans `#/depenses`, le donut et la liste sont à jour, le focus est sur le titre « Catégories » ; annuler la confirmation ne change rien.
+18. **Catégories par défaut** : Courses, Transport, Sorties, Plaisir et Autre affichent « Par défaut » sans bouton Modifier ni Supprimer ; l'écran est utilisable à 320 px (cibles de 44 px, pas de défilement horizontal) et « ← Retour » ramène à l'écran précédent.
+19. **Mois sans dépense (D41)** : avec une dépense en septembre et une en novembre (mois courant), supprimer `meta.derniereCloture` et recharger : `resumes` contient septembre mais pas octobre, et la liste de l'historique n'affiche pas « octobre 2026 · 0 dépense ». Déplacer la seule dépense de septembre au mois courant (`#/ajout/<id>`, nouvelle date, « Valider ») : le résumé de septembre disparaît de `resumes`. Supprimer un mois entièrement (case décochée), puis exporter et réimporter : le mois ne réapparaît pas dans l'histogramme (« — »).
+20. **Import d'un fichier mensuel (D39)** : importer un fichier produit par « Exporter ce mois avant » → confirmation « Ce fichier ne contient que les dépenses d'octobre 2026. Remplacer toutes tes données par celles-ci ? » (« de novembre » pour novembre) ; « Annuler » ne change rien ; un export complet garde « Remplacer toutes tes données par celles du fichier ? ».
+21. **Clôture rappelée par l'historique (D40)** : app ouverte (ou laissée en arrière-plan), avancer l'horloge système au mois suivant puis ouvrir `#/historique` sans recharger : le mois qui vient de se terminer a sa barre (pas « — ») et un résumé dans `resumes` ; `meta.derniereCloture` vaut ce mois.

@@ -1,0 +1,84 @@
+import { lireTout, transaction } from './db.js';
+import { construireExport, nomFichierExport, validerImport, ligneAImporter } from './domain/import.js';
+import { moisDe } from './domain/dates.js';
+import { formatMois, elisionDe } from './ui/format.js';
+import { initialiserCategories } from './store/categories.js';
+import { cloturerMoisPasses } from './store/resumes.js';
+
+const STORES = ['revenus', 'charges', 'depenses', 'categories', 'resumes', 'enveloppes', 'provisions'];
+const CONFIRMATION = 'Remplacer toutes tes données par celles du fichier ?';
+
+// Un fichier mensuel remplace aussi toutes les données (pas de fusion, § 8.3) : on le dit clairement.
+export function texteConfirmationImport(perimetre) {
+  const estMois = typeof perimetre === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(perimetre);
+  if (!estMois) return CONFIRMATION;
+  return `Ce fichier ne contient que les dépenses ${elisionDe(formatMois(perimetre))}. Remplacer toutes tes données par celles-ci ?`;
+}
+
+async function lireDonnees() {
+  const listes = await Promise.all(STORES.map((s) => lireTout(s)));
+  return Object.fromEntries(STORES.map((s, i) => [s, listes[i]]));
+}
+
+function telecharger(contenu, nom) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(contenu, null, 2)], { type: 'application/json' }));
+  const lien = document.createElement('a');
+  lien.href = url;
+  lien.download = nom;
+  document.body.append(lien);
+  lien.click();
+  lien.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export async function exporterTout(aujourdhui) {
+  const donnees = await lireDonnees();
+  const contenu = construireExport(donnees, { maintenant: new Date().toISOString(), perimetre: 'tout' });
+  telecharger(contenu, nomFichierExport(aujourdhui));
+}
+
+// Export d'un mois : ses dépenses et son résumé ; le reste est exporté en entier (revenus, charges, catégories…).
+export async function exporterMois(mois, aujourdhui) {
+  const donnees = await lireDonnees();
+  donnees.depenses = donnees.depenses.filter((d) => (d.mois ?? moisDe(d.date)) === mois);
+  donnees.resumes = donnees.resumes.filter((r) => r.mois === mois);
+  const contenu = construireExport(donnees, { maintenant: new Date().toISOString(), perimetre: mois });
+  telecharger(contenu, nomFichierExport(aujourdhui, mois));
+}
+
+// Efface et réécrit les 7 stores dans une seule transaction : en cas d'échec, rien ne change.
+export async function importerFichier(fichier, aujourdhui) {
+  let objet;
+  try {
+    objet = JSON.parse(await fichier.text());
+  } catch {
+    return { ok: false, erreur: 'Fichier illisible.' };
+  }
+  const validation = validerImport(objet);
+  if (!validation.ok) return validation;
+  if (!window.confirm(texteConfirmationImport(objet.perimetre))) return { ok: false, annule: true };
+
+  const { donnees } = validation;
+  await transaction([...STORES, 'meta'], 'readwrite', (tx) => {
+    for (const nom of STORES) {
+      const store = tx.objectStore(nom);
+      store.clear();
+      for (const ligne of donnees[nom]) store.put(ligneAImporter(nom, ligne));
+    }
+    tx.objectStore('meta').delete('derniereCloture');
+  });
+  // Un fichier sans « Autre » laisserait l'app sans catégorie de repli : on re-sème les catégories par défaut.
+  // Les données sont déjà remplacées : un échec ici ne doit pas faire croire à un import raté.
+  // Les deux étapes sont rejouées à chaque démarrage.
+  try {
+    await initialiserCategories();
+  } catch (erreur) {
+    console.error(erreur);
+  }
+  try {
+    await cloturerMoisPasses(moisDe(aujourdhui));
+  } catch (erreur) {
+    console.error(erreur);
+  }
+  return { ok: true };
+}

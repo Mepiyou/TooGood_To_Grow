@@ -107,3 +107,8 @@ test('avertissement si négatif seulement (B3)', () => {
   assert.equal(calculerAccueil({ revenus: [], charges: [], depenses: [{ montant: 2000, date: '2026-11-02', mois: '2026-11' }], aujourdhui: '2026-11-10' }).avertissement, true);
   assert.equal(calculerAccueil({ revenus: [], charges: [], depenses: [], aujourdhui: '2026-11-10' }).avertissement, false);
 });
+
+test('calculerAccueil compte une dépense du mois sans champ mois', () => {
+  const r = calculerAccueil({ revenus: [], charges: [], depenses: [{ montant: 2000, date: '2026-11-02' }, { montant: 500, date: '2026-10-02' }], aujourdhui: '2026-11-10' });
+  assert.equal(r.depensesMois, 2000);
+});

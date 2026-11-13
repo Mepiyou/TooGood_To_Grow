@@ -58,6 +58,11 @@ export function formatNomMois(mois) {
   return fmtNomMois.format(dateUTC(`${mois}-01`));
 }
 
+// « d'octobre 2026 » devant une voyelle, « de novembre 2026 » sinon.
+export function elisionDe(texte) {
+  return /^[aeiouyéèh]/i.test(texte) ? `d'${texte}` : `de ${texte}`;
+}
+
 export function majuscule(texte) {
   return texte.charAt(0).toUpperCase() + texte.slice(1);
 }
@@ -67,4 +72,24 @@ const fmtJourSemaine = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 
 // « mardi 10 novembre » : titre de groupe, sans l'année.
 export function formatJourSemaine(date) {
   return fmtJourSemaine.format(dateUTC(date));
+}
+
+const fmtMoisCourt = new Intl.DateTimeFormat('fr-FR', { month: 'short', timeZone: 'UTC' });
+const fmtDecimal = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
+
+// « juil. » : mois abrégé sous une barre de l'histogramme.
+export function formatMoisCourt(mois) {
+  return fmtMoisCourt.format(dateUTC(`${mois}-01`));
+}
+
+// Taille en octets → « 4 Ko » (arrondi, au moins 1) ou « 2,5 Mo » au-delà de 1024 Ko.
+export function formatTaille(octets) {
+  const ko = octets / 1024;
+  if (ko <= 1024) return `${Math.max(1, Math.round(ko))} Ko`;
+  return `${fmtDecimal.format(ko / 1024)} Mo`;
+}
+
+export function formatEspace(octets) {
+  if (typeof octets !== 'number' || !Number.isFinite(octets) || octets < 0) return 'Espace utilisé : inconnu';
+  return `Espace utilisé : ${formatTaille(octets)} sur ce téléphone`;
 }

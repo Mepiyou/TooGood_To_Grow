@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   formatMontant, formatMontantLu, formatSoldeQuotidien,
-  formatDateLongue, formatJourMois, formatMois, majuscule,
+  formatDateLongue, formatJourMois, formatMois, majuscule, elisionDe,
 } from '../js/ui/format.js';
 
 const n = (s) => s.replace(/[  ]/g, ' ');
@@ -39,4 +39,12 @@ test('dates', () => {
 test('majuscule', () => {
   assert.equal(majuscule('octobre 2026'), 'Octobre 2026');
   assert.equal(majuscule(''), '');
+});
+
+test('elisionDe : « d’ » devant une voyelle, « de » sinon', () => {
+  assert.equal(elisionDe('octobre 2026'), "d'octobre 2026");
+  assert.equal(elisionDe('avril'), "d'avril");
+  assert.equal(elisionDe('août 2026'), "d'août 2026");
+  assert.equal(elisionDe('novembre 2026'), 'de novembre 2026');
+  assert.equal(elisionDe('juin'), 'de juin');
 });

@@ -1,5 +1,9 @@
 import { echapper, couleurSure, COULEUR_REPLI } from '../ui/dom.js';
-import { formatMontant, formatJourSemaine } from '../ui/format.js';
+import { formatMontant, formatJourSemaine, formatNomMois } from '../ui/format.js';
+import { rendreOngletsDepenses } from '../ui/onglets.js';
+import { rendreDonut } from '../ui/donut.js';
+import { ICONE_MODIFIER, ICONE_SUPPRIMER } from '../ui/icones-actions.js';
+import { calculerResume, repartitionDonut } from '../domain/resume.js';
 import { categorieDeRepli } from '../domain/categories.js';
 import { groupesParJour, totalDepenses } from '../domain/depenses.js';
 import { moisDe, moisAChange } from '../domain/dates.js';
@@ -19,9 +23,6 @@ export function idAFocaliser(ids, idSupprime) {
   if (i === -1) return null;
   return ids[i + 1] ?? ids[i - 1] ?? null;
 }
-
-const ICONE_MODIFIER = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>';
-const ICONE_SUPPRIMER = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>';
 
 function rendreLigne(depense, categorie) {
   const libelle = echapper(libelleDepense(categorie.nom, depense.montant));
@@ -46,9 +47,15 @@ export async function render(container, params, ctx) {
     return categories.find((c) => c.id === id) ?? { nom: 'Autre', couleur: COULEUR_REPLI };
   };
 
+  const total = totalDepenses(depenses);
+  const repartition = repartitionDonut(calculerResume(mois, depenses).parCategorie, categories);
+  const donut = repartition.length > 0 ? rendreDonut(repartition, total, formatNomMois(mois)) : '';
+
   container.innerHTML = `<div class="vue-depenses">
     <h1>Dépenses</h1>
-    <p class="total-mois">Total du mois : <strong>${echapper(formatMontant(totalDepenses(depenses)))}</strong></p>
+    ${rendreOngletsDepenses('ce-mois')}
+    ${donut}
+    <p class="total-mois">Total du mois : <strong>${echapper(formatMontant(total))}</strong></p>
     ${groupes.length > 0
     ? groupes.map((g) => `<section class="groupe-jour">
       <h2>${echapper(formatJourSemaine(g.date))}</h2>
@@ -56,6 +63,7 @@ export async function render(container, params, ctx) {
     </section>`).join('')
     : `<p class="secondaire etat-vide">Aucune dépense ce mois-ci.</p>
     <a class="bouton" href="#/ajout">Ajouter une dépense</a>`}
+    <p class="lien-categories"><a href="#/categories">Gérer les catégories</a></p>
     <p class="erreur-formulaire" role="alert" hidden></p>
   </div>`;
 
