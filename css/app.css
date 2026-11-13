@@ -26,13 +26,15 @@ body {
   line-height: 1.5;
   max-width: 480px;
   margin-inline: auto;
+  /* Les bandeaux sont dans le flux, en haut : rien à dégager si la barre d'état recouvre la page. */
+  padding-top: env(safe-area-inset-top);
 }
 
 /* Réserve la place de la barre fixe du bas */
-body { padding-bottom: 72px; }
-body.avec-bouton { padding-bottom: 132px; }
-body.sans-nav { padding-bottom: 24px; }
-body.sans-nav.avec-bouton { padding-bottom: 84px; }
+body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+body.avec-bouton { padding-bottom: calc(132px + env(safe-area-inset-bottom)); }
+body.sans-nav { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+body.sans-nav.avec-bouton { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
 
 main { padding: 16px; }
 
@@ -64,6 +66,9 @@ a { color: var(--accent); }
 #barre-bas[hidden], #zone-actions[hidden], #nav-bas[hidden] { display: none; }
 
 #zone-actions { padding: 8px 16px; }
+
+/* Sans navigation (écran d'ajout), le bouton est seul : il dégage lui-même la zone sûre. */
+body.sans-nav #zone-actions { padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
 
 #nav-bas {
   display: flex;
@@ -125,6 +130,12 @@ a { color: var(--accent); }
 }
 
 .banniere[hidden] { display: none; }
+/* Bandeau hors ligne vide (en ligne) : toujours dans l'arbre, mais sans hauteur. */
+.banniere-hors-ligne:empty { padding: 0; }
+
+.banniere-ios { text-align: start; }
+.banniere-ios p { margin: 0 0 4px; }
+.banniere-ios .banniere-bouton { margin-inline-start: 0; }
 
 .banniere-maj { background: var(--alerte-fond); color: var(--alerte-texte); }
 /* À sa taille dans la ligne de texte ; la hauteur minimale de .bouton (48 px) reste la cible tactile. */
