@@ -44,8 +44,12 @@ export function planSuppressionMois({ mois, moisCourant, garderTotaux, depenses,
   const duMois = depenses.filter((d) => (d.mois ?? moisDe(d.date)) === mois);
   const idsDepenses = duMois.map((d) => d.id);
   if (!garderTotaux) return { idsDepenses, resume: null, supprimerResume: true };
-  const base = resume ?? calculerResume(mois, duMois, { maintenant });
-  return { idsDepenses, resume: { ...base, detailSupprime: true }, supprimerResume: false };
+  // Un total périmé deviendrait définitif : on recalcule tant qu'il reste des dépenses.
+  if (duMois.length > 0) {
+    const recalcule = calculerResume(mois, duMois, { epargne: resume?.epargne ?? 0, maintenant });
+    return { idsDepenses, resume: { ...recalcule, detailSupprime: true }, supprimerResume: false };
+  }
+  return { idsDepenses, resume: resume ? { ...resume, detailSupprime: true } : null, supprimerResume: false };
 }
 
 export function repartitionDonut(parCategorie, categories) {

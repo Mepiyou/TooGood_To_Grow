@@ -19,7 +19,7 @@ test('T9 suppression avec totaux', () => {
   assert.deepEqual(p.idsDepenses, ['d1','d2','d3','d4','d5']); assert.equal(p.resume.total, 7000);
   assert.equal(p.resume.detailSupprime, true); assert.equal(p.supprimerResume, false);
 });
-test('T9 suppression avec totaux : résumé existant conservé', () => {
+test('T9 suppression avec totaux : épargne du résumé existant conservée', () => {
   const existant = { mois: '2026-10', total: 7000, parCategorie: {}, epargne: 300, nbDepenses: 5, detailSupprime: false, calculeLe: 'A' };
   const p = planSuppressionMois({ mois: '2026-10', moisCourant: '2026-11', garderTotaux: true, depenses: oct, resume: existant, maintenant: 'X' });
   assert.equal(p.resume.epargne, 300); assert.equal(p.resume.detailSupprime, true);
@@ -58,6 +58,36 @@ test('six mois', () => {
   const t = totauxSixMois([{ mois: '2026-10', total: 7000 }], '2026-11', 1200);
   assert.equal(t.length, 6); assert.deepEqual(t.at(-1), { mois: '2026-11', total: 1200, courant: true });
   assert.equal(t.at(-2).total, 7000); assert.equal(t[0].mois, '2026-06'); assert.equal(t[0].total, null);
+});
+test('suppression avec totaux : résumé périmé recalculé, épargne conservée', () => {
+  const perime = { mois: '2026-10', total: 100, parCategorie: {}, epargne: 300, nbDepenses: 1, detailSupprime: false, calculeLe: 'A' };
+  const p = planSuppressionMois({ mois: '2026-10', moisCourant: '2026-11', garderTotaux: true, depenses: oct, resume: perime, maintenant: 'X' });
+  assert.equal(p.resume.total, 7000); assert.equal(p.resume.nbDepenses, 5);
+  assert.equal(p.resume.epargne, 300); assert.equal(p.resume.detailSupprime, true);
+  assert.equal(p.resume.calculeLe, 'X'); assert.equal(p.supprimerResume, false);
+});
+test('suppression avec totaux : résumé detailSupprime sans dépenses réutilisé', () => {
+  const deja = { mois: '2026-10', total: 7000, parCategorie: { courses: 7000 }, epargne: 0, nbDepenses: 5, detailSupprime: true, calculeLe: 'A' };
+  const p = planSuppressionMois({ mois: '2026-10', moisCourant: '2026-11', garderTotaux: true, depenses: [nov], resume: deja, maintenant: 'X' });
+  assert.deepEqual(p.resume, deja); assert.deepEqual(p.idsDepenses, []); assert.equal(p.supprimerResume, false);
+});
+test('suppression avec totaux : mois vide sans résumé', () => {
+  const p = planSuppressionMois({ mois: '2026-10', moisCourant: '2026-11', garderTotaux: true, depenses: [nov], resume: null, maintenant: 'X' });
+  assert.equal(p.resume, null); assert.equal(p.supprimerResume, false); assert.deepEqual(p.idsDepenses, []);
+});
+test('moisACloturer : bornes', () => {
+  assert.deepEqual(moisACloturer('2026-11', '2026-11', '2026-01'), []);
+  assert.deepEqual(moisACloturer('2026-12', '2026-11', '2026-01'), []);
+  assert.deepEqual(moisACloturer(null, '2026-11', '2026-12'), []);
+  assert.deepEqual(moisACloturer('2026-11', '2027-02', '2026-01'), ['2026-12', '2027-01']);
+});
+test('moisImpactes : date inchangée', () => {
+  assert.deepEqual(moisImpactes(oct[0], { ...oct[0], montant: 9 }, '2026-11'), ['2026-10']);
+});
+test('donut : autre déjà dans le top, fusion sans doublon', () => {
+  const cats = ['a','b','c','d','e','autre'].map(id => ({ id, nom: id, couleur: '#000' }));
+  const r = repartitionDonut({ autre: 6000, a: 3000, b: 2000, c: 1000, d: 500, e: 300 }, cats);
+  assert.deepEqual(r.map(x => [x.id, x.montant]), [['autre', 6300], ['a', 3000], ['b', 2000], ['c', 1000], ['d', 500]]);
 });
 test('six mois : détail supprimé garde son total', () => {
   const t = totauxSixMois([{ mois: '2026-10', total: 7000, detailSupprime: true }], '2026-11', 0);
