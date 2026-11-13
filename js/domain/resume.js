@@ -45,11 +45,11 @@ export function planSuppressionMois({ mois, moisCourant, garderTotaux, depenses,
   const idsDepenses = duMois.map((d) => d.id);
   if (!garderTotaux) return { idsDepenses, resume: null, supprimerResume: true };
   // Un total périmé deviendrait définitif : on recalcule tant qu'il reste des dépenses.
-  if (duMois.length > 0) {
-    const recalcule = calculerResume(mois, duMois, { epargne: resume?.epargne ?? 0, maintenant });
-    return { idsDepenses, resume: { ...recalcule, detailSupprime: true }, supprimerResume: false };
-  }
-  return { idsDepenses, resume: resume ? { ...resume, detailSupprime: true } : null, supprimerResume: false };
+  // Seul un résumé déjà détaillé-supprimé et sans dépenses restantes est fiable tel quel.
+  if (duMois.length === 0 && !resume) return { idsDepenses, resume: null, supprimerResume: false };
+  if (duMois.length === 0 && resume.detailSupprime === true) return { idsDepenses, resume, supprimerResume: false };
+  const recalcule = calculerResume(mois, duMois, { epargne: resume?.epargne ?? 0, maintenant });
+  return { idsDepenses, resume: { ...recalcule, detailSupprime: true }, supprimerResume: false };
 }
 
 export function repartitionDonut(parCategorie, categories) {

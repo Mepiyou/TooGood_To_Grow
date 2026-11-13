@@ -71,6 +71,12 @@ test('suppression avec totaux : résumé detailSupprime sans dépenses réutilis
   const p = planSuppressionMois({ mois: '2026-10', moisCourant: '2026-11', garderTotaux: true, depenses: [nov], resume: deja, maintenant: 'X' });
   assert.deepEqual(p.resume, deja); assert.deepEqual(p.idsDepenses, []); assert.equal(p.supprimerResume, false);
 });
+test('suppression avec totaux : résumé non détaillé périmé, mois sans dépenses', () => {
+  const perime = { mois: '2026-10', total: 100, parCategorie: { courses: 100 }, epargne: 300, nbDepenses: 1, detailSupprime: false, calculeLe: 'A' };
+  const p = planSuppressionMois({ mois: '2026-10', moisCourant: '2026-11', garderTotaux: true, depenses: [nov], resume: perime, maintenant: 'X' });
+  assert.equal(p.resume.total, 0); assert.equal(p.resume.nbDepenses, 0); assert.deepEqual(p.resume.parCategorie, {});
+  assert.equal(p.resume.epargne, 300); assert.equal(p.resume.detailSupprime, true); assert.equal(p.supprimerResume, false);
+});
 test('suppression avec totaux : mois vide sans résumé', () => {
   const p = planSuppressionMois({ mois: '2026-10', moisCourant: '2026-11', garderTotaux: true, depenses: [nov], resume: null, maintenant: 'X' });
   assert.equal(p.resume, null); assert.equal(p.supprimerResume, false); assert.deepEqual(p.idsDepenses, []);
