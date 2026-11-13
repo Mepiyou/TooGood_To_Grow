@@ -7,13 +7,14 @@
 | 2. Charges fixes (US3) | 2026-11-12 | 8 | 66,8 | 19,9 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US3 charges, panneau de formulaire commun. `node tools/mesurer.mjs dist` (build v11-8f275940) : 0 URL externe, budget respecté |
 | 3. Dépenses (US4) | 2026-11-12 | 8 | 96,9 | 27,2 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US4 saisie, modification, suppression, liste du mois. `node tools/mesurer.mjs dist` (build v15-01312683) : 0 URL externe, budget respecté |
 | 4. Accueil (US2) | 2026-11-13 | 8 | 106,4 | 29,5 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US2 solde quotidien, reste à vivre, dernières dépenses ; rafraîchissement au retour après un changement de date (focus fenêtre, formulaire ouvert préservé) ; libellés D29 (fin du mois aujourd'hui) et D30 (début de mois sans dépense). `node tools/mesurer.mjs dist` (build v19-659df82c) : 0 URL externe, budget respecté |
+| 5. Hors ligne (US9) | 2026-11-13 | 8 | 109,9 | 30,6 | à mesurer par l'équipe | à mesurer par l'équipe | à vérifier par l'équipe | US9 persistance du stockage, encart d'installation iOS, bandeau hors ligne annoncé, zone sûre en bas d'écran. `node tools/mesurer.mjs dist` (build v20-e2ee9ac6) : 0 URL externe, aucune API réseau dans js/app.js, budget respecté |
 
 Limite de l'outil : les requêtes d'installation du service worker (précache) ne sont pas comptées en plus du premier chargement.
 
 ## À faire par l'équipe
 
-- Test sur iPhone 8 réel en mode avion (US9).
-- EcoIndex (ecoindex.fr / GreenIT-Analysis).
+- **US9 en mode avion sur un vrai iPhone 8 (Safari iOS 16)** : condition de fin de l'étape 5 (checklist « Étape 5 », points 1 à 8 sur l'appareil).
+- **EcoIndex** (ecoindex.fr / GreenIT-Analysis).
 - Test chronométré de saisie d'une dépense.
 
 ### Checklist manuelle « Étape 0 »
@@ -111,3 +112,18 @@ Les chiffres attendus **dépendent du jour du test** : reste à vivre = 400 (Job
 10. **Zéro requête** : DevTools › Réseau ouvert, recharger puis naviguer Accueil → Dépenses → Accueil : aucune requête hors premier chargement (servi par le service worker).
 11. **Dernier jour du mois sans rentrée** (D29) : sans rentrée prévue après aujourd'hui, le dernier jour du mois (simulable en changeant la date système) → « Reste à vivre : … · fin du mois aujourd'hui » ; la veille : « fin du mois dans 1 jour ».
 12. **Début de mois avant la première rentrée, sans dépense** (D30) : reste à vivre négatif (charges déjà dues, aucune dépense, rentrée prévue plus tard dans le mois) → l'encart affiche « Ta prochaine rentrée arrive le … : limite tes dépenses d'ici là. » ; après une dépense, retour au texte « Tu as dépassé ton budget de … € … ».
+
+### Checklist manuelle « Étape 5 »
+
+Base vide au départ (DevTools › Application › Storage › Clear site data), `npm run build && npm run serve`, ouvrir http://localhost:8081 (une fois, en ligne).
+
+1. **Gherkin US9, simulé dans Chrome** : après un premier chargement en ligne, DevTools › Réseau › Hors ligne, recharger : l'app s'ouvre. « + Ajouter une dépense », 5, « Courses », « Valider » → dépense enregistrée, solde mis à jour sur l'accueil, et le bandeau gris affiche « Hors ligne · tes saisies sont enregistrées sur ce téléphone. ».
+2. **Retour en ligne** : décocher « Hors ligne » : le texte du bandeau disparaît (le bandeau n'occupe plus de place) ; les dépenses saisies hors ligne sont toujours là après rechargement.
+3. **Annonce du lecteur d'écran** (VoiceOver ou NVDA) : passer hors ligne, puis en ligne, sans bouger le focus : le lecteur annonce le texte du bandeau au passage hors ligne (le conteneur `role="status"` est toujours dans la page, seul son texte change).
+4. **Encart iOS** (Safari sur iPhone, app non installée) : en haut de l'écran, « Installe l'app : touche Partager › Sur l'écran d'accueil. L'installation protège tes données. » et un bouton « Compris » (≥ 44 px). La barre du bas et « + Ajouter une dépense » restent visibles ; naviguer entre les écrans ne fait pas disparaître l'encart ; à 320 px, il tient sans défilement horizontal.
+5. **« Compris »** : l'encart disparaît ; recharger et rouvrir l'app : il ne revient pas (`meta.encartIosVu` dans IndexedDB › `toogood` › `meta`).
+6. **Installée sur l'écran d'accueil** (Partager › Sur l'écran d'accueil, lancer depuis l'icône) : aucun encart, même base vide. Chrome desktop ou Android : jamais d'encart.
+7. **Persistance** : DevTools › Application › IndexedDB › `toogood` › `meta` contient `persistDemande` (`date` et `accorde`), écrit une seule fois ; DevTools › Application › Storage indique « Persistent storage » si le navigateur l'accorde (un refus est normal et silencieux). Aucune erreur visible dans l'interface.
+8. **Zéro requête** : DevTools › Réseau (filtre « Tout »), vider la liste, puis utiliser l'app (ajout, modification, navigation) : liste vide. `node tools/mesurer.mjs dist` indique « API réseau dans js/app.js : aucune ».
+9. **iPhone à encoche, installé** : sur Accueil, Dépenses et l'écran d'ajout, rien ne passe sous la barre du bas ni sous le bouton « + Ajouter une dépense » (faire défiler jusqu'en bas) ; la barre du bas ne touche pas l'indicateur de l'écran d'accueil.
+10. **iPhone 8 réel, mode avion** : refaire les points 1, 2 et 5 avec le mode avion activé (app installée ou ouverte dans Safari après un premier chargement en ligne).
