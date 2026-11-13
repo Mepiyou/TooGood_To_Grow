@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculerAlerte, depensesDesSeptDerniersJours } from '../js/domain/alertes.js';
+import { calculerAlerte, depensesDesSeptDerniersJours, moisDesSeptDerniersJours } from '../js/domain/alertes.js';
 
 test('T15 alerte', () => {
   assert.deepEqual(calculerAlerte({ resteAVivre: 12000, depenses7Jours: 8400, joursRestants: 15, aujourdhui: '2026-11-10', alerteVueLe: null }),
@@ -40,4 +40,21 @@ test('depensesDesSeptDerniersJours : fenêtre de 7 jours, aujourd’hui inclus',
   const depenses = [d('2026-11-03', 999), d('2026-11-04', 100), d('2026-11-10', 200), d('2026-11-11', 999)];
   assert.equal(depensesDesSeptDerniersJours(depenses, '2026-11-10'), 300);
   assert.equal(depensesDesSeptDerniersJours([], '2026-11-10'), 0);
+});
+test('D46 : solde de provision compté pour montant − reserve dans la moyenne des 7 jours', () => {
+  const solde = { date: '2026-03-01', montant: 60000, provisionId: 'p', reserve: 45000 };
+  const autre = { date: '2026-03-02', montant: 1000 };
+  assert.equal(depensesDesSeptDerniersJours([solde, autre], '2026-03-03'), 16000);
+  // Sans `reserve` (donnée ancienne ou importée) : montant entier.
+  assert.equal(depensesDesSeptDerniersJours([{ date: '2026-03-01', montant: 600, provisionId: 'p' }], '2026-03-03'), 600);
+});
+test('D46 : mois à lire pour les 7 derniers jours (mois précédent du 1er au 6)', () => {
+  assert.deepEqual(moisDesSeptDerniersJours('2026-11-10'), ['2026-11']);
+  assert.deepEqual(moisDesSeptDerniersJours('2026-11-07'), ['2026-11']);
+  assert.deepEqual(moisDesSeptDerniersJours('2026-11-06'), ['2026-10', '2026-11']);
+  assert.deepEqual(moisDesSeptDerniersJours('2027-01-01'), ['2026-12', '2027-01']);
+});
+test('D46 : dépenses du mois précédent comptées en début de mois', () => {
+  const depenses = [{ date: '2026-10-31', montant: 700 }, { date: '2026-10-26', montant: 999 }, { date: '2026-11-02', montant: 300 }];
+  assert.equal(depensesDesSeptDerniersJours(depenses, '2026-11-02'), 1000);
 });

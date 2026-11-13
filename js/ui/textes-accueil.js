@@ -1,5 +1,5 @@
 // Textes de l'accueil (spec § 15 : B3, B4, D18, D29, D30). Purs : le HTML les échappe à l'injection.
-import { formatMontant } from './format.js';
+import { formatMontant, formatSoldeQuotidien, formatJourMoisLong } from './format.js';
 import { jourDe } from '../domain/dates.js';
 
 function dansJours(n) {
@@ -25,6 +25,14 @@ export function texteAvertissement({ resteAVivre, depensesMois, prochaineRentree
     return `Ta prochaine rentrée arrive le ${jourDe(prochaineRentree.date)} : limite tes dépenses d'ici là.`;
   }
   return `Tu as dépassé ton budget de ${formatMontant(-resteAVivre)}. Pas de panique : limite tes dépenses jusqu'au ${jourDe(prochaineRentree.date)}.`;
+}
+
+// US5 : bandeau d'alerte de découvert. `lu` remplace « 8 €/jour » (lu « barre jour ») pour les lecteurs d'écran.
+export function texteAlerte({ dateDecouvert, soldeConseille }, prochaineRentree) {
+  const debut = `Attention : à ce rythme, tu seras à découvert vers le ${formatJourMoisLong(dateDecouvert)}. Il te reste `;
+  const fin = ` jusqu'au ${jourDe(prochaineRentree.date)}.`;
+  const solde = formatSoldeQuotidien(soldeConseille);
+  return { texte: `${debut}${solde.texte}${fin}`, lu: `${debut}${solde.lu}${fin}` };
 }
 
 // Premier lancement (D18) : aucun revenu saisi, quel qu'il soit.

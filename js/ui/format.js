@@ -47,6 +47,13 @@ export function formatJourMois(date) {
   return fmtJourMois.format(dateUTC(date));
 }
 
+const fmtJourMoisLong = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+
+// « 20 novembre » : sans l'année (alerte de découvert).
+export function formatJourMoisLong(date) {
+  return fmtJourMoisLong.format(dateUTC(date));
+}
+
 export function formatMois(mois) {
   return fmtMois.format(dateUTC(`${mois}-01`));
 }

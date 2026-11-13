@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { calculerAccueil } from '../js/domain/budget.js';
-import { formatMontant } from '../js/ui/format.js';
-import { ligneResteAVivre, texteAvertissement, estPremierLancement } from '../js/ui/textes-accueil.js';
+import { formatMontant, formatJourMoisLong } from '../js/ui/format.js';
+import { ligneResteAVivre, texteAvertissement, estPremierLancement, texteAlerte } from '../js/ui/textes-accueil.js';
 
 const espaces = (s) => s.replace(/[\u00a0\u202f]/g, ' ');
 
@@ -98,4 +98,22 @@ test('premier lancement : aucun revenu saisi', () => {
   assert.equal(estPremierLancement([]), true);
   assert.equal(estPremierLancement(revenus), false);
   assert.equal(estPremierLancement([revenus[2]]), false); // un revenu « mois suivant » compte comme saisi
+});
+
+test('formatJourMoisLong : « 20 novembre », sans année', () => {
+  assert.equal(formatJourMoisLong('2026-11-20'), '20 novembre');
+  assert.equal(formatJourMoisLong('2027-03-01'), '1 mars');
+});
+
+test('US5 : texte de l\'alerte de découvert (T15)', () => {
+  const alerte = { dateDecouvert: '2026-11-20', soldeConseille: 800 };
+  const rentree = { date: '2026-11-25', revenu: { nom: 'APL' } };
+  const t = texteAlerte(alerte, rentree);
+  assert.equal(espaces(t.texte), "Attention : à ce rythme, tu seras à découvert vers le 20 novembre. Il te reste 8 €/jour jusqu'au 25.");
+  assert.equal(t.lu, "Attention : à ce rythme, tu seras à découvert vers le 20 novembre. Il te reste 8 euros par jour jusqu'au 25.");
+});
+
+test('US5 : alerte sans rentrée prévue, jusqu\'au dernier jour du mois', () => {
+  const t = texteAlerte({ dateDecouvert: '2026-11-10', soldeConseille: 0 }, { date: '2026-11-30', revenu: null });
+  assert.equal(espaces(t.texte), "Attention : à ce rythme, tu seras à découvert vers le 10 novembre. Il te reste 0 €/jour jusqu'au 30.");
 });
