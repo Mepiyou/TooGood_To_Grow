@@ -22,10 +22,33 @@ export function nomFichierExport(aujourdhui, mois) {
   return `toogood-${mois ?? aujourdhui}.json`;
 }
 
+const FORMAT_MOIS = /^\d{4}-(0[1-9]|1[0-2])$/;
+const idValide = (o) => typeof o.id === 'string' && o.id !== '';
+const entierPositif = (n) => Number.isInteger(n) && n > 0;
+const moisValide = (m) => typeof m === 'string' && FORMAT_MOIS.test(m);
+const facultatif = (v, test) => v === undefined || test(v);
+
 const depenseValide = (d) => estObjet(d)
-  && typeof d.id === 'string' && d.id !== ''
-  && Number.isInteger(d.montant) && d.montant > 0
-  && dateValide(d.date);
+  && idValide(d)
+  && entierPositif(d.montant)
+  && dateValide(d.date)
+  && facultatif(d.note, (v) => typeof v === 'string')
+  && facultatif(d.provisionId, (v) => typeof v === 'string')
+  && facultatif(d.reserve, (v) => Number.isInteger(v) && v >= 0);
+
+const resumeValide = (r) => estObjet(r)
+  && moisValide(r.mois)
+  && Number.isInteger(r.total) && r.total >= 0;
+
+const enveloppeValide = (e) => estObjet(e)
+  && idValide(e)
+  && (e.type === 'plaisir' || e.type === 'epargne')
+  && entierPositif(e.montantMensuel);
+
+const provisionValide = (p) => estObjet(p)
+  && idValide(p)
+  && entierPositif(p.montantTotal)
+  && moisValide(p.moisEcheance);
 
 const categorieValide = (c) => estObjet(c)
   && typeof c.id === 'string' && c.id !== ''
@@ -41,7 +64,8 @@ export function validerImport(objet) {
   const { donnees } = objet;
   if (!estObjet(donnees) || !CHAMPS.every((c) => Array.isArray(donnees[c]))
     || !donnees.depenses.every(depenseValide)
-    || !donnees.revenus.every(ligneValide) || !donnees.charges.every(ligneValide) || !donnees.categories.every(categorieValide)) {
+    || !donnees.revenus.every(ligneValide) || !donnees.charges.every(ligneValide) || !donnees.categories.every(categorieValide)
+    || !donnees.resumes.every(resumeValide) || !donnees.enveloppes.every(enveloppeValide) || !donnees.provisions.every(provisionValide)) {
     return { ok: false, erreur: ERR_CORROMPU };
   }
   return { ok: true, donnees };

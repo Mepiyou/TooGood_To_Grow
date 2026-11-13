@@ -4,7 +4,10 @@ import { categorieDeRepli } from './categories.js';
 
 const MAX_PARTS_DONUT = 5;
 
-export function calculerResume(mois, depenses, { epargne = 0, maintenant } = {}) {
+const somme = (valeurs) => Object.values(valeurs).reduce((s, v) => s + v, 0);
+
+// D42 : l'épargne est stockée par enveloppe pour que le cumul se recalcule depuis les résumés.
+export function calculerResume(mois, depenses, { epargneParEnveloppe = {}, epargne = somme(epargneParEnveloppe), maintenant } = {}) {
   const duMois = depenses.filter((d) => (d.mois ?? moisDe(d.date)) === mois);
   const parCategorie = {};
   for (const d of duMois) {
@@ -15,6 +18,7 @@ export function calculerResume(mois, depenses, { epargne = 0, maintenant } = {})
     total: totalDepenses(duMois),
     parCategorie,
     epargne,
+    epargneParEnveloppe,
     nbDepenses: duMois.length,
     detailSupprime: false,
     calculeLe: maintenant,
@@ -32,6 +36,15 @@ export function decisionResume(existant, recalcule) {
 // Vrai si le mois précédent est déjà clôturé : la clôture n'a alors rien à lire.
 export function clotureAJour(derniereCloture, moisCourant) {
   return Boolean(derniereCloture) && comparer(derniereCloture, moisPrecedent(moisCourant)) >= 0;
+}
+
+// D43 : la clôture commence à la première dépense ou à la première enveloppe Épargne, au plus ancien.
+export function premierMoisACloturer(depenses, enveloppes) {
+  let premier = null;
+  const retenir = (m) => { if (premier === null || comparer(m, premier) < 0) premier = m; };
+  for (const d of depenses) retenir(d.mois ?? moisDe(d.date));
+  for (const e of enveloppes) if (e.type === 'epargne' && e.actifDepuis) retenir(e.actifDepuis);
+  return premier;
 }
 
 export function moisACloturer(derniereCloture, moisCourant, premierMois) {
@@ -61,7 +74,9 @@ export function planSuppressionMois({ mois, moisCourant, garderTotaux, depenses,
   // Seul un résumé déjà détaillé-supprimé et sans dépenses restantes est fiable tel quel.
   if (duMois.length === 0 && !resume) return { idsDepenses, resume: null, supprimerResume: false };
   if (duMois.length === 0 && resume.detailSupprime === true) return { idsDepenses, resume, supprimerResume: false };
-  const recalcule = calculerResume(mois, duMois, { epargne: resume?.epargne ?? 0, maintenant });
+  const recalcule = calculerResume(mois, duMois, {
+    epargne: resume?.epargne ?? 0, epargneParEnveloppe: resume?.epargneParEnveloppe ?? {}, maintenant,
+  });
   return { idsDepenses, resume: { ...recalcule, detailSupprime: true }, supprimerResume: false };
 }
 

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   calculerResume, moisACloturer, moisImpactes, planSuppressionMois, repartitionDonut, totauxSixMois,
-  decisionResume, clotureAJour,
+  decisionResume, clotureAJour, premierMoisACloturer,
 } from '../js/domain/resume.js';
 
 const oct = [['d1','courses',1200,'2026-10-02'],['d2','courses',800,'2026-10-09'],['d3','transport',2500,'2026-10-01'],['d4','sorties',1500,'2026-10-17'],['d5','plaisir',1000,'2026-10-25']]
@@ -129,4 +129,29 @@ test('decisionResume : écrire, supprimer ou garder', () => {
   // Détail supprimé : jamais recalculé ni supprimé.
   assert.equal(decisionResume({ ...existant, detailSupprime: true }, vide), 'garder');
   assert.equal(decisionResume({ ...existant, detailSupprime: true }, plein), 'garder');
+});
+
+test('calculerResume stocke l’épargne par enveloppe ; epargne = somme par défaut', () => {
+  const r = calculerResume('2026-10', oct, { epargneParEnveloppe: { a: 5000, b: 2000 }, maintenant: 'X' });
+  assert.deepEqual(r.epargneParEnveloppe, { a: 5000, b: 2000 });
+  assert.equal(r.epargne, 7000);
+  assert.deepEqual(calculerResume('2026-10', oct, { maintenant: 'X' }).epargneParEnveloppe, {});
+  assert.equal(calculerResume('2026-10', oct, { epargne: 300, maintenant: 'X' }).epargne, 300);
+});
+
+test('suppression avec totaux : épargne par enveloppe conservée', () => {
+  const existant = { mois: '2026-10', total: 1, parCategorie: {}, epargne: 5000, epargneParEnveloppe: { a: 5000 }, nbDepenses: 1, detailSupprime: false };
+  const p = planSuppressionMois({ mois: '2026-10', moisCourant: '2026-11', garderTotaux: true, depenses: oct, resume: existant, maintenant: 'X' });
+  assert.deepEqual(p.resume.epargneParEnveloppe, { a: 5000 });
+  assert.equal(p.resume.epargne, 5000);
+});
+
+test('D43 premierMoisACloturer : première dépense ou première enveloppe Épargne', () => {
+  const env = (actifDepuis, type = 'epargne') => ({ id: actifDepuis, type, actifDepuis });
+  assert.equal(premierMoisACloturer(oct, []), '2026-10');
+  assert.equal(premierMoisACloturer([...oct, nov], [env('2026-08'), env('2026-09')]), '2026-08');
+  assert.equal(premierMoisACloturer(oct, [env('2026-11')]), '2026-10');
+  assert.equal(premierMoisACloturer([], [env('2026-07'), env('2026-01', 'plaisir')]), '2026-07');
+  assert.equal(premierMoisACloturer([{ date: '2026-05-03' }], []), '2026-05');
+  assert.equal(premierMoisACloturer([], []), null);
 });

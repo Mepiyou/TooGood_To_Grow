@@ -112,3 +112,43 @@ test('calculerAccueil compte une dépense du mois sans champ mois', () => {
   const r = calculerAccueil({ revenus: [], charges: [], depenses: [{ montant: 2000, date: '2026-11-02' }, { montant: 500, date: '2026-10-02' }], aujourdhui: '2026-11-10' });
   assert.equal(r.depensesMois, 2000);
 });
+
+const demoAccueil = () => ({
+  revenus: [rec('Bourse', 450, 5), rec('APL', 200, 25), rec('Job', 400, 30, { moisSuivant: true })],
+  charges: [['T', 2500, 1], ['L', 56000, 3], ['F', 1000, 12]].map(([nom, montant, jour]) => creerCharge({ nom, montant, jour }, '2026-10')),
+  depenses: [{ montant: 7000, date: '2026-11-04', mois: '2026-11' }],
+  aujourdhui: '2026-11-10',
+});
+const env = (id, type, euros, extra = {}) => ({ id, type, nom: id, montantMensuel: euros * 100, suspendue: false, actifDepuis: '2026-10', ...extra });
+
+test('calculerAccueil sans enveloppes ni provisions : épargne, provisions et libérées à 0', () => {
+  const a = calculerAccueil(demoAccueil());
+  assert.equal(a.resteAVivre, 18500);
+  assert.equal(a.epargne, 0); assert.equal(a.provisions, 0); assert.equal(a.liberees, 0);
+});
+
+test('calculerAccueil V2 : épargne reçue et provisions déduites, plaisir non déduit (D36, D45)', () => {
+  const enveloppes = [
+    env('vacances', 'epargne', 50, { revenuSourceId: 'Bourse' }),
+    env('noel', 'epargne', 30, { revenuSourceId: 'APL' }), // APL le 25 : pas encore reçu
+    env('pause', 'epargne', 20, { revenuSourceId: 'Bourse', suspendue: true }),
+    env('plaisir', 'plaisir', 60),
+  ];
+  const provisions = [{ id: 'assu', nom: 'Assurance', montantTotal: 60000, debut: '2026-11', moisEcheance: '2027-03' }];
+  const a = calculerAccueil({ ...demoAccueil(), enveloppes, provisions });
+  assert.equal(a.epargne, 5000);
+  assert.equal(a.provisions, 15000);
+  assert.equal(a.resteAVivre, 18500 - 5000 - 15000);
+  assert.equal(a.avertissement, true);
+  assert.equal(a.soldeQuotidien, 0);
+});
+
+test('D44 calculerAccueil : le déjà réservé d’une provision soldée est libéré', () => {
+  const solde = { montant: 60000, categorieId: 'autre', date: '2026-11-01', mois: '2026-11', provisionId: 'assu', reserve: 45000 };
+  const ancien = { montant: 1000, date: '2026-10-01', mois: '2026-10', provisionId: 'x', reserve: 1000 };
+  const base = demoAccueil();
+  const a = calculerAccueil({ ...base, depenses: [...base.depenses, solde, ancien] });
+  assert.equal(a.liberees, 45000);
+  assert.equal(a.depensesMois, 67000);
+  assert.equal(a.resteAVivre, 18500 - 60000 + 45000);
+});
