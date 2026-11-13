@@ -26,7 +26,8 @@ export function libelleLigne(ligne) {
   const mois = formatMois(ligne.mois);
   if (ligne.detailSupprime) return `${mois} · totaux conservés`;
   const n = ligne.nbDepenses;
-  return `${mois} · ${n} ${n > 1 ? 'dépenses' : 'dépense'} · environ ${formatTaille(ligne.taille)}`;
+  const base = `${mois} · ${n} ${n > 1 ? 'dépenses' : 'dépense'}`;
+  return ligne.taille > 0 ? `${base} · environ ${formatTaille(ligne.taille)}` : base;
 }
 
 function rendreLigne(ligne) {

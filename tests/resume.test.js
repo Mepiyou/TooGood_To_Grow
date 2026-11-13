@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   calculerResume, moisACloturer, moisImpactes, planSuppressionMois, repartitionDonut, totauxSixMois,
+  decisionResume,
 } from '../js/domain/resume.js';
 
 const oct = [['d1','courses',1200,'2026-10-02'],['d2','courses',800,'2026-10-09'],['d3','transport',2500,'2026-10-01'],['d4','sorties',1500,'2026-10-17'],['d5','plaisir',1000,'2026-10-25']]
@@ -98,4 +99,26 @@ test('donut : autre déjà dans le top, fusion sans doublon', () => {
 test('six mois : détail supprimé garde son total', () => {
   const t = totauxSixMois([{ mois: '2026-10', total: 7000, detailSupprime: true }], '2026-11', 0);
   assert.equal(t.at(-2).total, 7000);
+});
+
+test('mois sans dépense : pas de résumé', () => {
+  const vide = calculerResume('2026-09', oct, { maintenant: 'X' });
+  assert.equal(vide.nbDepenses, 0);
+  assert.equal(decisionResume(null, vide), 'garder');
+  assert.equal(decisionResume(undefined, vide), 'garder');
+});
+test('decisionResume : écrire, supprimer ou garder', () => {
+  const plein = calculerResume('2026-10', oct, { maintenant: 'X' });
+  const vide = calculerResume('2026-10', [], { maintenant: 'X' });
+  const existant = { ...plein, total: 100 };
+  assert.equal(decisionResume(null, plein), 'ecrire');
+  assert.equal(decisionResume(existant, plein), 'ecrire');
+  // Dernière dépense du mois supprimée : le résumé retombé à 0 disparaît.
+  assert.equal(decisionResume(existant, vide), 'supprimer');
+  // Une épargne suffit à justifier un résumé (étape 7).
+  assert.equal(decisionResume(existant, { ...vide, epargne: 500 }), 'ecrire');
+  assert.equal(decisionResume(null, { ...vide, epargne: 500 }), 'ecrire');
+  // Détail supprimé : jamais recalculé ni supprimé.
+  assert.equal(decisionResume({ ...existant, detailSupprime: true }, vide), 'garder');
+  assert.equal(decisionResume({ ...existant, detailSupprime: true }, plein), 'garder');
 });

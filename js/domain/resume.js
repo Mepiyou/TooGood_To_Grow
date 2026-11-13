@@ -21,6 +21,14 @@ export function calculerResume(mois, depenses, { epargne = 0, maintenant } = {})
   };
 }
 
+// Que faire du résumé stocké `existant` face au résumé recalculé : 'ecrire', 'supprimer' ou 'garder'.
+// Un mois sans dépense ni épargne n'a pas de résumé ; un détail supprimé n'est jamais touché.
+export function decisionResume(existant, recalcule) {
+  if (existant?.detailSupprime === true) return 'garder';
+  if (recalcule.nbDepenses > 0 || recalcule.epargne > 0) return 'ecrire';
+  return existant ? 'supprimer' : 'garder';
+}
+
 export function moisACloturer(derniereCloture, moisCourant, premierMois) {
   if (premierMois === null || premierMois === undefined) return [];
   let debut = derniereCloture ? moisSuivant(derniereCloture) : premierMois;

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { hauteursBarres, libelleBarres, rendreBarres } from '../js/ui/barres.js';
 import { formatEspace, formatMoisCourt, formatMois } from '../js/ui/format.js';
 import { lignesHistorique } from '../js/domain/resume.js';
+import { libelleLigne } from '../js/views/historique.js';
 
 const espaces = (s) => s.replace(/[\u00a0\u202f]/g, ' ');
 const totaux = [
@@ -56,4 +57,10 @@ test('lignesHistorique : plus récent d’abord, détail supprimé, courant non 
   assert.deepEqual(l.map((x) => x.detailSupprime), [false, false, true]);
   assert.equal(l[1].nbDepenses, 23);
   assert.equal(l[1].taille, 4096);
+});
+
+test('libelleLigne : taille affichée seulement si > 0', () => {
+  assert.equal(espaces(libelleLigne({ mois: '2026-10', nbDepenses: 3, taille: 4096, detailSupprime: false })), 'octobre 2026 · 3 dépenses · environ 4 Ko');
+  assert.equal(espaces(libelleLigne({ mois: '2026-10', nbDepenses: 0, taille: 0, detailSupprime: false })), 'octobre 2026 · 0 dépense');
+  assert.equal(espaces(libelleLigne({ mois: '2026-10', nbDepenses: 0, taille: 0, detailSupprime: true })), 'octobre 2026 · totaux conservés');
 });
